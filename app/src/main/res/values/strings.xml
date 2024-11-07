@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">finalproject</string>
+    <string name="retake">Retake</string>
+    <string name="add_info">Add Info</string>
+    <string name="post">POST</string>
+    <string name="feed">Feed</string>
+    <string name="profile">Profile</string>
+    <string name="vertical_ellipsis">&#8942;</string>
+</resources>
