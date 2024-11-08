@@ -42,7 +42,18 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.camera.lifecycle)
+
+    // CameraX dependencies
+    implementation(libs.androidx.camera.core)  // Camera Core
+    implementation(libs.androidx.camera.camera2)  // Camera2
+    implementation(libs.androidx.camera.lifecycle)  // Camera Lifecycle
+    implementation(libs.androidx.camera.view)  // Camera View
+    implementation(libs.androidx.camera.extensions)  // Camera Extensions
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
 }

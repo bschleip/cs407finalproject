@@ -12,8 +12,8 @@
         android:layout_height="match_parent">
 
         <!-- Camera preview -->
-        <TextureView
-            android:id="@+id/textureView"
+        <androidx.camera.view.PreviewView
+            android:id="@+id/viewFinder"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
