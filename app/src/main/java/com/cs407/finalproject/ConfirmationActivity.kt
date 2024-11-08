@@ -7,8 +7,8 @@ import android.net.Uri
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
-import android.widget.Switch
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SwitchCompat
 
 class ConfirmationActivity : AppCompatActivity() {
 
@@ -40,7 +40,7 @@ class ConfirmationActivity : AppCompatActivity() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_info, null)
 
         // get references to dialog components
-        val switchIncludeLocation = dialogView.findViewById<Switch>(R.id.switchIncludeLocation)
+        val switchIncludeLocation = dialogView.findViewById<SwitchCompat>(R.id.switchIncludeLocation)
         val captionEditText = dialogView.findViewById<EditText>(R.id.captionEditText)
         val cancelButton = dialogView.findViewById<Button>(R.id.cancelButton)
         val saveButton = dialogView.findViewById<Button>(R.id.saveButton)

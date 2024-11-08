@@ -5,5 +5,9 @@
     <string name="post">POST</string>
     <string name="feed">Feed</string>
     <string name="profile">Profile</string>
-    <string name="vertical_ellipsis">&#8942;</string>
+    <string name="confirmation_image_description">Confirmation Image</string>
+    <string name="location">Location</string>
+    <string name="enter_caption">Enter caption</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
 </resources>

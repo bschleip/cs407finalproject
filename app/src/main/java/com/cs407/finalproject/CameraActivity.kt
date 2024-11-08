@@ -24,7 +24,7 @@ class CameraActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
     private lateinit var btnCapture: Button
     private var camera: Camera? = null
     private lateinit var feedButton: Button
-    private lateinit var settingsBtn: ImageButton
+    private lateinit var settingsButton: ImageButton
 
 
     companion object {
@@ -38,7 +38,7 @@ class CameraActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
         textureView = findViewById(R.id.textureView)
         btnCapture = findViewById(R.id.captureButton)
         feedButton = findViewById(R.id.feedButton)
-        settingsBtn = findViewById(R.id.settingsButton)
+        settingsButton = findViewById(R.id.settingsButton)
 
 
         // Check for camera permission
@@ -67,7 +67,7 @@ class CameraActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
             startActivity(intent)
 
         }
-        settingsBtn.setOnClickListener {
+        settingsButton.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
 

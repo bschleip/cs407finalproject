@@ -11,7 +11,8 @@
         android:id="@+id/captionEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter caption"
+        android:autofillHints=""
+        android:hint="@string/enter_caption"
         android:inputType="text" />
 
     <!-- Bottom row for include location switch and buttons -->
@@ -23,11 +24,11 @@
         android:orientation="horizontal">
 
         <!-- Include location switch aligned to the left -->
-        <Switch
+        <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/switchIncludeLocation"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Location" />
+            android:text="@string/location" />
 
         <!-- Spacer to push buttons to the right -->
         <View
@@ -40,13 +41,13 @@
             android:id="@+id/cancelButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cancel" />
+            android:text="@string/cancel" />
 
         <Button
             android:id="@+id/saveButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="Save" />
+            android:text="@string/save" />
     </LinearLayout>
 </LinearLayout>
