@@ -5,6 +5,7 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
+
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
@@ -22,13 +23,15 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".ConfirmationActivity"
-            android:exported="false">
-        </activity>
+            android:exported="false" />
+<!--        <activity android:name=".LoginActivity" />-->
+<!--        <activity android:name=".SignupActivity" />-->
     </application>
 
 </manifest>
