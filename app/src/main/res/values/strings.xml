@@ -10,4 +10,7 @@
     <string name="enter_caption">Enter caption</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
+    <string name="close">Close</string>
+    <string name="search_friends">Search friends by username</string>
+    <string name="add_friend">Add Friend</string>
 </resources>
