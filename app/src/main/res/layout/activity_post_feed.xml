@@ -19,7 +19,7 @@
         android:background="#EEEEEE"
         android:gravity="center">
 
-        <TextView
+        <Button
             android:id="@+id/nav_home"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -29,17 +29,17 @@
             android:textColor="#000000"
             android:padding="8dp" />
 
-        <TextView
-            android:id="@+id/nav_search"
+        <Button
+            android:id="@+id/nav_cam"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Search"
+            android:text="Camera"
             android:gravity="center"
             android:textColor="#000000"
             android:padding="8dp" />
 
-        <TextView
+        <Button
             android:id="@+id/nav_profile"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

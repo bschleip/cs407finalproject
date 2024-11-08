@@ -1,5 +1,6 @@
-package com.cs407.shenanigans
+package com.cs407.finalproject
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -13,13 +14,16 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.cs407.finalproject.R
 
 class FeedActivity : AppCompatActivity() {
+
+    private lateinit var cameraBtn: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_post_feed)
+
+        cameraBtn = findViewById(R.id.nav_cam)
 
         val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
         val images = arrayOf(R.drawable.exsotd, R.drawable.expost1, R.drawable.expost2)
@@ -36,6 +40,12 @@ class FeedActivity : AppCompatActivity() {
 
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = PostAdapter(listOf(sotd) + remainingPosts)
+
+        cameraBtn.setOnClickListener {
+            val intent = Intent(this, CameraActivity::class.java)
+            startActivity(intent)
+
+        }
     }
 
     private inner class PostAdapter(private val posts: List<Post>) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {

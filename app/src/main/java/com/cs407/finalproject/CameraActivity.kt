@@ -14,6 +14,7 @@ import android.graphics.BitmapFactory
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
 import android.net.Uri
+import android.widget.ImageButton
 import java.io.File
 import java.io.FileOutputStream
 
@@ -22,6 +23,9 @@ class CameraActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
     private lateinit var textureView: TextureView
     private lateinit var btnCapture: Button
     private var camera: Camera? = null
+    private lateinit var feedButton: Button
+    private lateinit var settingsBtn: ImageButton
+
 
     companion object {
         const val REQUEST_CAMERA_PERMISSION = 1
@@ -33,6 +37,9 @@ class CameraActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
 
         textureView = findViewById(R.id.textureView)
         btnCapture = findViewById(R.id.captureButton)
+        feedButton = findViewById(R.id.feedButton)
+        settingsBtn = findViewById(R.id.settingsButton)
+
 
         // Check for camera permission
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -54,6 +61,18 @@ class CameraActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
                 startActivity(intent)
             })
         }
+
+        feedButton.setOnClickListener {
+            val intent = Intent(this, FeedActivity::class.java)
+            startActivity(intent)
+
+        }
+        settingsBtn.setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
+
+        }
+
     }
 
     private fun startCamera() {
@@ -119,45 +138,3 @@ class CameraActivity : AppCompatActivity(), TextureView.SurfaceTextureListener {
     }
 }
 
-//    private lateinit var textureView: TextureView
-//    private lateinit var captureButton: Button
-//
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        setContentView(R.layout.activity_camera)
-//
-//        textureView = findViewById(R.id.textureView)
-//        captureButton = findViewById(R.id.captureButton)
-//
-//        // Check permissions
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_CAMERA_PERMISSION)
-//        } else {
-//            startCamera()
-//        }
-//
-//        captureButton.setOnClickListener {
-//            val bitmap = textureView.bitmap
-//            val imageUri = bitmap?.let { it1 -> saveBitmap(it1) }
-//            val intent = Intent(this, ConfirmationActivity::class.java)
-//            intent.putExtra("imageUri", imageUri.toString())
-//            startActivity(intent)
-//        }
-//    }
-//
-//    private fun startCamera() {
-//        // Camera setup code here using CameraX or Camera API
-//    }
-//
-//    private fun saveBitmap(bitmap: Bitmap): Uri {
-//        val file = File(externalCacheDir, "captured_image.jpg")
-//        val outputStream = FileOutputStream(file)
-//        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-//        outputStream.flush()
-//        outputStream.close()
-//        return Uri.fromFile(file)
-//    }
-//
-//    companion object {
-//        const val REQUEST_CAMERA_PERMISSION = 1
-//    }

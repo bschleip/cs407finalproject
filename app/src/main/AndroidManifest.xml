@@ -29,9 +29,17 @@
         </activity>
         <activity
             android:name=".ConfirmationActivity"
-            android:exported="false" />
-<!--        <activity android:name=".LoginActivity" />-->
-<!--        <activity android:name=".SignupActivity" />-->
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".FeedActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false">
+        </activity>
+
     </application>
 
 </manifest>
