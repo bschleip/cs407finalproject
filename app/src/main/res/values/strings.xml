@@ -4,6 +4,7 @@
     <string name="add_info">Add Info</string>
     <string name="post">POST</string>
     <string name="feed">Feed</string>
+    <string name="camera">Camera</string>
     <string name="profile">Profile</string>
     <string name="confirmation_image_description">Confirmation Image</string>
     <string name="location">Location</string>

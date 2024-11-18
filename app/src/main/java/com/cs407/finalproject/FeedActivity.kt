@@ -15,12 +15,14 @@ import android.widget.TextView
 class FeedActivity : AppCompatActivity() {
 
     private lateinit var cameraBtn: Button
+    private lateinit var profileBtn: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_post_feed)
 
         cameraBtn = findViewById(R.id.nav_cam)
+        profileBtn = findViewById(R.id.nav_profile)
 
         val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
         val posts = createPosts()
@@ -31,6 +33,9 @@ class FeedActivity : AppCompatActivity() {
         cameraBtn.setOnClickListener {
             val intent = Intent(this, CameraActivity::class.java)
             startActivity(intent)
+        }
+        profileBtn.setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
         }
     }
 
