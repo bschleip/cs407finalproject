@@ -26,6 +26,7 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var viewFinder: PreviewView
     private lateinit var captureButton: Button
     private lateinit var feedButton: Button
+    private lateinit var profileButton: Button
     private lateinit var settingsButton: ImageButton
     private lateinit var addFriendsButton: ImageButton
     private var imageCapture: ImageCapture?= null
@@ -37,6 +38,7 @@ class CameraActivity : AppCompatActivity() {
         viewFinder = findViewById(R.id.viewFinder)
         captureButton = findViewById(R.id.captureButton)
         feedButton = findViewById(R.id.feedButton)
+        profileButton = findViewById(R.id.profileButton)
         settingsButton = findViewById(R.id.settingsButton)
         addFriendsButton = findViewById(R.id.addFriendsButton)
 
@@ -51,6 +53,9 @@ class CameraActivity : AppCompatActivity() {
         captureButton.setOnClickListener { takePhoto() }
         feedButton.setOnClickListener {
             startActivity(Intent(this, FeedActivity::class.java))
+        }
+        profileButton.setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
         }
         settingsButton.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
