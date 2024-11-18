@@ -49,7 +49,7 @@ private fun createPosts(): List<Post> {
 private fun createPostAdapter(posts: List<Post>): RecyclerView.Adapter<PostViewHolder> {
     return object : RecyclerView.Adapter<PostViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.post_item, parent, false)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false)
             return PostViewHolder(view)
         }
 

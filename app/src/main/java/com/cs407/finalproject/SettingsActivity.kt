@@ -39,7 +39,7 @@ class SettingsActivity : AppCompatActivity() {
         return object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
                 return createSettingsViewHolder(
-                    LayoutInflater.from(parent.context).inflate(R.layout.settings_item, parent, false)
+                    LayoutInflater.from(parent.context).inflate(R.layout.item_setting, parent, false)
                 )
             }
 

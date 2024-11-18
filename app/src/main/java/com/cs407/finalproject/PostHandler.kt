@@ -3,7 +3,6 @@ package com.cs407.finalproject
 import android.os.Build
 import android.os.Bundle
 import android.view.HapticFeedbackConstants
-import android.view.MotionEvent
 import android.view.animation.Animation
 import android.view.animation.BounceInterpolator
 import android.view.animation.ScaleAnimation
@@ -16,7 +15,7 @@ class PostHandler : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.post_view)
+        setContentView(R.layout.activity_post_view)
 
         buttonFavorite = findViewById(R.id.button_favorite)
 
