@@ -23,7 +23,7 @@
             app:srcCompat="@drawable/logo" />
 
         <EditText
-            android:id="@+id/editTextText"
+            android:id="@+id/usernameEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
@@ -32,12 +32,20 @@
             android:paddingTop="20dp" />
 
         <EditText
-            android:id="@+id/editTextTextPassword"
+            android:id="@+id/passwordEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
             android:hint="Password"
             android:inputType="textPassword" />
+
+        <TextView
+            android:id="@+id/errorMsgTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:visibility="gone"
+            android:gravity="center"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -46,14 +54,14 @@
             android:paddingTop="20dp">
 
             <Button
-                android:id="@+id/button3"
+                android:id="@+id/signupButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Sign Up" />
 
             <Button
-                android:id="@+id/button4"
+                android:id="@+id/loginButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
