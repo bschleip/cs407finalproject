@@ -69,21 +69,16 @@ class SignupActivity : AppCompatActivity() {
             return
         }
 
-        // Attempt to register
         val result = dbHelper.registerUser(username, password)
 
         if (result != -1L) {
-            // Registration successful
             Toast.makeText(this, "Account created successfully", Toast.LENGTH_SHORT).show()
 
-            // Navigate to CameraActivity
             val intent = Intent(this, CameraActivity::class.java)
-            // You might want to pass the username or user ID if needed
             intent.putExtra("USERNAME", username)
             startActivity(intent)
-            finish() // Close signup activity
+            finish()
         } else {
-            // Registration failed
             showError("Failed to create account")
         }
     }
@@ -100,7 +95,6 @@ class SignupActivity : AppCompatActivity() {
     }
 }
 
-// Updated UserDatabaseHelper (from previous example)
 class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
@@ -128,7 +122,6 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         onCreate(db)
     }
 
-    // Hash password using SHA-256 (matching your existing hash method)
     private fun hashPassword(password: String): String {
         return MessageDigest.getInstance("SHA-256").digest(password.toByteArray())
             .fold("") { str, it -> str + "%02x".format(it) }

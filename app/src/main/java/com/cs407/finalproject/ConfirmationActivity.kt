@@ -36,21 +36,17 @@ class  ConfirmationActivity : AppCompatActivity() {
     }
 
     private fun showAddInfoDialog() {
-        // inflate the custom dialog layout
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_info, null)
 
-        // get references to dialog components
         val switchIncludeLocation = dialogView.findViewById<SwitchCompat>(R.id.switchIncludeLocation)
         val captionEditText = dialogView.findViewById<EditText>(R.id.captionEditText)
         val cancelButton = dialogView.findViewById<Button>(R.id.cancelButton)
         val saveButton = dialogView.findViewById<Button>(R.id.saveButton)
 
-        // build and show the dialog
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
             .create()
 
-        // set button click listeners
         cancelButton.setOnClickListener {
             dialog.dismiss()
         }
