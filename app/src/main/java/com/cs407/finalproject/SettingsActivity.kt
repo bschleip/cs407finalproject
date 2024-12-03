@@ -1,5 +1,6 @@
 package com.cs407.finalproject
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -26,7 +27,7 @@ class SettingsActivity : AppCompatActivity() {
         settingsRecyclerView.layoutManager = LinearLayoutManager(this)
         settingsRecyclerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
 
-        val settingsList = listOf("Setting 1", "Setting 2", "Setting 3")
+        val settingsList = listOf("Setting 1", "Setting 2", "Logout")
         settingsRecyclerView.adapter = createSettingsAdapter(settingsList)
 
         backSettingsBtn.setOnClickListener {
@@ -60,5 +61,30 @@ class SettingsActivity : AppCompatActivity() {
     private fun bindSettingsViewHolder(holder: RecyclerView.ViewHolder, setting: String) {
         val settingText = holder.itemView.findViewById<TextView>(R.id.setting_text)
         settingText.text = setting
+
+        holder.itemView.setOnClickListener {
+            when (setting) {
+                "Logout" -> logout() // Handle logout
+                else -> {
+                    // Handle other settings
+                }
+            }
+        }
+    }
+
+    private fun logout() {
+        val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+
+        // Remove user session
+        with(sharedPref.edit()) {
+            remove("LOGGED_IN_USER_ID")
+            apply()
+        }
+
+        // Redirect to LoginActivity
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 }

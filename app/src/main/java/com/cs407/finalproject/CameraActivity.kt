@@ -1,24 +1,25 @@
 package com.cs407.finalproject
 
-import android.content.pm.PackageManager
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import android.widget.Button
-import androidx.core.content.ContextCompat
 import android.Manifest
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.core.content.ContextCompat
 import java.io.File
 
 class CameraActivity : AppCompatActivity() {
@@ -29,10 +30,24 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var profileButton: Button
     private lateinit var settingsButton: ImageButton
     private lateinit var addFriendsButton: ImageButton
-    private var imageCapture: ImageCapture?= null
+    private var imageCapture: ImageCapture? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Check if a user is logged in
+        val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        val userId = sharedPref.getInt("LOGGED_IN_USER_ID", -1)
+
+        if (userId == -1) {
+            // No user is logged in; redirect to SignupActivity
+            val intent = Intent(this, SignupActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+            return
+        }
+
         setContentView(R.layout.activity_camera)
 
         viewFinder = findViewById(R.id.viewFinder)
@@ -49,7 +64,7 @@ class CameraActivity : AppCompatActivity() {
             requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
 
-        // setting the buttons
+        // Set up button listeners
         captureButton.setOnClickListener { takePhoto() }
         feedButton.setOnClickListener {
             startActivity(Intent(this, FeedActivity::class.java))
@@ -111,7 +126,7 @@ class CameraActivity : AppCompatActivity() {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture)
             } catch (e: Exception) {
-                Log.e("CameraActivity", "Use case finding failed", e)
+                Log.e("CameraActivity", "Use case binding failed", e)
             }
         }, ContextCompat.getMainExecutor(this))
     }
@@ -139,4 +154,3 @@ class CameraActivity : AppCompatActivity() {
         )
     }
 }
-
