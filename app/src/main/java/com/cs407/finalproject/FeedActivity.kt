@@ -1,6 +1,7 @@
 package com.cs407.finalproject
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -66,14 +67,10 @@ class FeedActivity : AppCompatActivity() {
 
             override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
                 val post = posts[position]
-                // Load image using Glide
-                Glide.with(holder.itemView.context)
-                    .load(post.imageUri)
-//                    .placeholder(R.drawable.placeholder_image) // A placeholder while loading
-                    .into(holder.postImage)
+                // Load image using ImageView.setImageURI()
+                holder.postImage.setImageURI(Uri.parse(post.imageUri))
 
                 // Bind text data
-//                holder.geotagText.text = post.geotag ?: "Unknown Location"
                 holder.captionText.text = post.caption ?: ""
 
                 // Handle like button click

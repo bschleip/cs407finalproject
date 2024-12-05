@@ -207,4 +207,20 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         db.update("posts", values, "id = ?", arrayOf(postId.toString()))
         db.close()
     }
+
+    // Potential functions to avoid null crashing at first
+    fun tableExists(db: SQLiteDatabase): Boolean {
+        val cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='posts'", null)
+        val exists = cursor.count > 0
+        cursor.close()
+        return exists
+    }
+
+    fun addDefaultPost(db: SQLiteDatabase) {
+        val values = ContentValues()
+        values.put("caption", "Welcome to the app!")
+        values.put("imageUri", "")  // You can use a default image or leave it empty
+        values.put("timestamp", System.currentTimeMillis())
+        db.insert("posts", null, values)
+    }
 }

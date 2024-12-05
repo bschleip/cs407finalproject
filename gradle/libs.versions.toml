@@ -14,7 +14,6 @@ camera-camera2 = "1.1.0"
 camera-lifecycle = "1.1.0"
 camera-view = "1.1.0"
 camera-extensions = "1.1.0"
-glide = "4.15.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -25,8 +24,6 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
-glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
-#glide.compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
 
 # CameraX dependenies
 androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "camera-core" }
