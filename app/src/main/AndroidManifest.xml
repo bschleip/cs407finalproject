@@ -50,6 +50,11 @@
             android:name=".LoginActivity"
             android:exported="false">
         </activity>
+        <activity
+            android:name=".TermsAndConditionsActivity"
+            android:exported="false">
+        </activity>
+
 
     </application>
 

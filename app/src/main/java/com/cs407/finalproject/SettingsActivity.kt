@@ -27,7 +27,7 @@ class SettingsActivity : AppCompatActivity() {
         settingsRecyclerView.layoutManager = LinearLayoutManager(this)
         settingsRecyclerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
 
-        val settingsList = listOf("Setting 1", "Setting 2", "Logout")
+        val settingsList = listOf("Version: 1.0.0", "Terms and Conditions", "Logout")
         settingsRecyclerView.adapter = createSettingsAdapter(settingsList)
 
         backSettingsBtn.setOnClickListener {
@@ -64,12 +64,15 @@ class SettingsActivity : AppCompatActivity() {
 
         holder.itemView.setOnClickListener {
             when (setting) {
-                "Logout" -> logout() // Handle logout
-                else -> {
-                    // Handle other settings
-                }
+                "Terms and Conditions" -> navigateToTerms()
+                "Logout" -> logout()
             }
         }
+    }
+
+    private fun navigateToTerms() {
+        val intent = Intent(this, TermsAndConditionsActivity::class.java)
+        startActivity(intent)
     }
 
     private fun logout() {
