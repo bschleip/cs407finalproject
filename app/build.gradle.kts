@@ -50,7 +50,7 @@ dependencies {
     implementation(libs.androidx.camera.camera2)  // Camera2
     implementation(libs.androidx.camera.lifecycle)  // Camera Lifecycle
     implementation(libs.androidx.camera.view)  // Camera View
-    implementation(libs.androidx.camera.extensions)  // Camera Extensions
+    implementation(libs.androidx.camera.extensions) // Camera Extensions
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
