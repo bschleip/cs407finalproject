@@ -4,8 +4,10 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.icu.text.SimpleDateFormat
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
@@ -21,6 +23,8 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import java.io.File
+import java.util.Date
+import java.util.Locale
 
 class CameraActivity : AppCompatActivity() {
 
@@ -131,9 +135,16 @@ class CameraActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
+    private fun createImageFile(): File {
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val imageFileName = "IMG_${timeStamp}.jpg"
+        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        return File(storageDir, imageFileName)
+    }
+
     private fun takePhoto() {
         val imageCapture = imageCapture ?: return
-        val photoFile = File(externalCacheDir, "captured_image.jpg")
+        val photoFile = createImageFile()
 
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
         imageCapture.takePicture(

@@ -6,5 +6,11 @@ data class Post(
     val imageUri: String,
     val caption: String?,
     var likes: Int,
-    val timestamp: String
-)
+    val timestamp: String,
+    val latitude: Double?,
+    val longitude: Double?
+) {
+    override fun toString(): String {
+        return "Post(id=$id, imageUri=$imageUri, caption=$caption, timestamp=$timestamp)"
+    }
+}

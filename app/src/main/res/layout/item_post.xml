@@ -29,6 +29,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Geotag"
+        android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/like_button"
         app:layout_constraintStart_toStartOf="parent" />
 

@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 import java.security.MessageDigest
 
 class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -26,7 +27,8 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         private const val COLUMN_CAPTION = "caption"
         private const val COLUMN_LIKES = "likes"
         private const val COLUMN_TIMESTAMP = "timestamp"
-        private const val COLUMN_LOCATION = "location"
+        private const val COLUMN_LATITUDE = "latitude"
+        private const val COLUMN_LONGITUDE = "longitude"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -46,6 +48,8 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                 $COLUMN_CAPTION TEXT,
                 $COLUMN_LIKES INTEGER DEFAULT 0,
                 $COLUMN_TIMESTAMP DATETIME DEFAULT CURRENT_TIMESTAMP,
+                $COLUMN_LATITUDE REAL,
+                $COLUMN_LONGITUDE REAL,
                 FOREIGN KEY($COLUMN_USER_ID) REFERENCES $TABLE_USERS($COLUMN_ID)
             )
         """.trimIndent() // TODO: location column
@@ -121,15 +125,23 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
     }
 
     // Post-related methods
-    fun addPost(userId: Int, imageUri: String, caption: String?): Long {
+    fun addPost(userId: Int, imageUri: String, caption: String?, latitude: Double?, longitude: Double?): Long {
         val db = this.writableDatabase
         val values = ContentValues().apply {
             put(COLUMN_USER_ID, userId)
             put(COLUMN_IMAGE_URI, imageUri)
             put(COLUMN_CAPTION, caption)
             put(COLUMN_LIKES, 0) // Initial likes count
+            put(COLUMN_TIMESTAMP, System.currentTimeMillis())
+            put(COLUMN_LATITUDE, latitude)
+            put(COLUMN_LONGITUDE, longitude)
         }
-        return db.insert(TABLE_POSTS, null, values).also {
+        return try {
+            db.insertOrThrow(TABLE_POSTS, null, values)
+        } catch (e: Exception) {
+            Log.e("UserDatabaseHelper", "Error adding post: ${e.message}")
+            -1
+        } finally {
             db.close()
         }
     }
@@ -155,7 +167,11 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                         imageUri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_IMAGE_URI)),
                         caption = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CAPTION)),
                         likes = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_LIKES)),
-                        timestamp = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP))
+                        timestamp = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)),
+                        latitude = if (cursor.isNull(cursor.getColumnIndexOrThrow(COLUMN_LATITUDE))) null
+                                    else cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LATITUDE)),
+                        longitude = if (cursor.isNull(cursor.getColumnIndexOrThrow(COLUMN_LONGITUDE))) null
+                                    else cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LONGITUDE))
                     )
                     posts.add(post)
                 } while (cursor.moveToNext())
@@ -184,7 +200,11 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                 imageUri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_IMAGE_URI)),
                 caption = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CAPTION)),
                 likes = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_LIKES)),
-                timestamp = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP))
+                timestamp = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)),
+                latitude = if (cursor.isNull(cursor.getColumnIndexOrThrow(COLUMN_LATITUDE))) null
+                            else cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LATITUDE)),
+                longitude = if (cursor.isNull(cursor.getColumnIndexOrThrow(COLUMN_LONGITUDE))) null
+                            else cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LONGITUDE))
             )
         } else {
             null
@@ -206,21 +226,5 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         }
         db.update("posts", values, "id = ?", arrayOf(postId.toString()))
         db.close()
-    }
-
-    // Potential functions to avoid null crashing at first
-    fun tableExists(db: SQLiteDatabase): Boolean {
-        val cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='posts'", null)
-        val exists = cursor.count > 0
-        cursor.close()
-        return exists
-    }
-
-    fun addDefaultPost(db: SQLiteDatabase) {
-        val values = ContentValues()
-        values.put("caption", "Welcome to the app!")
-        values.put("imageUri", "")  // You can use a default image or leave it empty
-        values.put("timestamp", System.currentTimeMillis())
-        db.insert("posts", null, values)
     }
 }
