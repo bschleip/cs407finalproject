@@ -48,7 +48,8 @@ class FeedActivity : AppCompatActivity() {
             startActivity(intent)
         }
         profileBtn.setOnClickListener {
-            startActivity(Intent(this, ProfileActivity::class.java))
+            startActivity(Intent(this, ProfileActivity::class.java)
+            )
         }
     }
 
@@ -84,41 +85,35 @@ class FeedActivity : AppCompatActivity() {
         return object : RecyclerView.Adapter<PostViewHolder>() {
             override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
                 val view = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_post, parent, false)
+                    .inflate(R.layout.activity_post_view, parent, false)
                 return PostViewHolder(view)
             }
 
             override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
                 val post = posts[position]
 
-                if (post.latitude != null && post.longitude != null) {
-                    holder.locationText.visibility = View.VISIBLE
-
-                    // To show raw coordinates:
-//                    holder.locationText.text = "📍 ${post.latitude}, ${post.longitude}"
-
-                    // Showing the actual address:
-                    getAddressFromLocation(post.latitude, post.longitude) { address ->
-                        holder.locationText.text = "📍 $address"
-                    }
+                // Bind image
+                if (!post.imageUri.isNullOrEmpty()) {
+                    holder.postImage.visibility = View.VISIBLE
+                    holder.postImage.setImageURI(Uri.parse(post.imageUri))
                 } else {
-                    holder.locationText.visibility = View.GONE
-                }
-
-                try {
-                    if (post.imageUri.isNotEmpty()) {
-                        holder.postImage.visibility = View.VISIBLE
-                        val uri = Uri.parse(post.imageUri)
-                        holder.postImage.setImageURI(uri)
-                    } else {
-                        Log.e("FeedActivity", "Empty imageUri for post: $post")
-                        holder.postImage.visibility = View.GONE
-                    }
-                } catch (e: Exception) {
-                    Log.e("FeedActivity", "Error loading image for post: $post", e)
                     holder.postImage.visibility = View.GONE
                 }
 
+                // Bind caption
+                holder.captionText.text = post.caption ?: ""
+
+                // Bind geotag
+                if (post.latitude != null && post.longitude != null) {
+                    holder.geotagText.visibility = View.VISIBLE
+                    getAddressFromLocation(post.latitude, post.longitude) { address ->
+                        holder.geotagText.text = "📍 $address"
+                    }
+                } else {
+                    holder.geotagText.visibility = View.GONE
+                }
+
+                // Handle like button
                 holder.likeButton.setOnClickListener {
                     post.likes++
                     postDatabaseHelper.updateLikes(post.id, post.likes)
@@ -154,10 +149,9 @@ class FeedActivity : AppCompatActivity() {
     }
 }
 
-
 class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-    val postImage: ImageView = view.findViewById(R.id.post_image)
-    val likeButton: Button = view.findViewById(R.id.like_button)
-    val captionText: TextView = view.findViewById(R.id.caption_text)
-    val locationText: TextView = view.findViewById(R.id.geotag_text)
+    val postImage: ImageView = view.findViewById(R.id.mainImage)
+    val likeButton: Button = view.findViewById(R.id.button_favorite)
+    val captionText: TextView = view.findViewById(R.id.Caption)
+    val geotagText: TextView = view.findViewById(R.id.Geotag)
 }
