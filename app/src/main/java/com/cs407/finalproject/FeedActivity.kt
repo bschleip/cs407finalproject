@@ -93,6 +93,10 @@ class FeedActivity : AppCompatActivity() {
             override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
                 val post = posts[position]
 
+                // Set username
+                val username = postDatabaseHelper.getUsernameById(post.userId)
+                holder.usernameText.text = username
+
                 // Bind image
                 if (!post.imageUri.isNullOrEmpty()) {
                     holder.postImage.visibility = View.VISIBLE
@@ -171,6 +175,7 @@ class FeedActivity : AppCompatActivity() {
 }
 
 class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    val usernameText: TextView = view.findViewById(R.id.username)
     val postImage: ImageView = view.findViewById(R.id.mainImage)
     val likeButton: ToggleButton = view.findViewById(R.id.button_favorite)
     val captionText: TextView = view.findViewById(R.id.Caption)

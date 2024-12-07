@@ -141,6 +141,27 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         }
     }
 
+    fun getUsernameById(userId: Int): String {
+        val db = this.readableDatabase
+        val cursor = db.query(
+            TABLE_USERS,
+            arrayOf(COLUMN_USERNAME),
+            "$COLUMN_ID = ?",
+            arrayOf(userId.toString()),
+            null, null, null
+        )
+        return try {
+            if (cursor.moveToFirst()) {
+                cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USERNAME))
+            } else {
+                "Unknown User"
+            }
+        } finally {
+            cursor.close()
+            db.close()
+        }
+    }
+
     // Post-related methods
     fun addPost(userId: Int, imageUri: String, caption: String?, latitude: Double?, longitude: Double?): Long {
         val db = this.writableDatabase
