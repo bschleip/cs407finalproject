@@ -10,7 +10,7 @@ import java.security.MessageDigest
 class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
-        private const val DATABASE_VERSION = 2
+        private const val DATABASE_VERSION = 3
         private const val DATABASE_NAME = "UserDatabase.db"
 
         // Users table columns
@@ -29,6 +29,11 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         private const val COLUMN_TIMESTAMP = "timestamp"
         private const val COLUMN_LATITUDE = "latitude"
         private const val COLUMN_LONGITUDE = "longitude"
+
+        // Like table columns
+        private const val TABLE_LIKES = "user_likes"
+        private const val COLUMN_LIKE_POST_ID = "post_id"
+        private const val COLUMN_LIKE_USER_ID = "user_id"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -52,15 +57,27 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                 $COLUMN_LONGITUDE REAL,
                 FOREIGN KEY($COLUMN_USER_ID) REFERENCES $TABLE_USERS($COLUMN_ID)
             )
-        """.trimIndent() // TODO: location column
+        """.trimIndent()
+
+        val createLikesTable = """
+            CREATE TABLE $TABLE_LIKES (
+                $COLUMN_LIKE_POST_ID INTEGER,
+                $COLUMN_LIKE_USER_ID INTEGER,
+                PRIMARY KEY ($COLUMN_LIKE_POST_ID, $COLUMN_LIKE_USER_ID),
+                FOREIGN KEY($COLUMN_LIKE_POST_ID) REFERENCES $TABLE_POSTS($COLUMN_POST_ID) ON DELETE CASCADE,
+                FOREIGN KEY($COLUMN_LIKE_USER_ID) REFERENCES $TABLE_USERS($COLUMN_ID)
+            )
+        """.trimIndent()
 
         db.execSQL(createUsersTable)
         db.execSQL(createPostsTable)
+        db.execSQL(createLikesTable)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL("DROP TABLE IF EXISTS $TABLE_USERS")
         db.execSQL("DROP TABLE IF EXISTS $TABLE_POSTS")
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_LIKES ")
         onCreate(db)
     }
 
@@ -214,17 +231,67 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         }
     }
 
-    fun likePost(postId: Int) {
-        val db = this.writableDatabase
-        db.execSQL("UPDATE $TABLE_POSTS SET $COLUMN_LIKES = $COLUMN_LIKES + 1 WHERE $COLUMN_POST_ID = ?", arrayOf(postId))
+    // Like counting-related methods
+    fun hasUserLikedPost(postId: Int, userId: Int): Boolean {
+        val db = this.readableDatabase
+        return db.query(
+            TABLE_LIKES,
+            null,
+            "$COLUMN_LIKE_POST_ID = ? AND $COLUMN_LIKE_USER_ID = ?",
+            arrayOf(postId.toString(), userId.toString()),
+            null,
+            null,
+            null
+        ).use { cursor ->
+            cursor.count > 0
+        }
     }
 
-    fun updateLikes(postId: Int, likes: Int) {
+    fun toggleLike(postId: Int, userId: Int) {
         val db = this.writableDatabase
-        val values = ContentValues().apply {
-            put("likes", likes)
+        db.beginTransaction()
+        try {
+            if(hasUserLikedPost(postId, userId)) {
+                // Unlike the post
+                db.delete(
+                    TABLE_LIKES,
+                    "$COLUMN_LIKE_POST_ID = ? AND $COLUMN_LIKE_USER_ID = ?",
+                    arrayOf(postId.toString(), userId.toString())
+                )
+                db.execSQL(
+                    "UPDATE $TABLE_POSTS SET $COLUMN_LIKES = $COLUMN_LIKES - 1 WHERE $COLUMN_POST_ID = ?",
+                    arrayOf(postId)
+                )
+            } else {
+                // Like the post
+                val values = ContentValues().apply {
+                    put(COLUMN_LIKE_POST_ID, postId)
+                    put(COLUMN_LIKE_USER_ID, userId)
+                }
+                db.insertOrThrow(TABLE_LIKES, null, values)
+                db.execSQL(
+                    "UPDATE $TABLE_POSTS SET $COLUMN_LIKES = $COLUMN_LIKES + 1 WHERE $COLUMN_POST_ID = ?",
+                    arrayOf(postId)
+                )
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
         }
-        db.update("posts", values, "id = ?", arrayOf(postId.toString()))
-        db.close()
+    }
+
+    fun getLikeCount(postId: Int): Int {
+        val db = this.readableDatabase
+        return db.query(
+            TABLE_LIKES,
+            arrayOf("COUNT(*)"),
+            "$COLUMN_LIKE_POST_ID = ?",
+            arrayOf(postId.toString()),
+            null,
+            null,
+            null
+        ).use { cursor ->
+            if (cursor.moveToFirst()) cursor.getInt(0) else 0
+        }
     }
 }

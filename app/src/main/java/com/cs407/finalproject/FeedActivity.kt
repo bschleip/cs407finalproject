@@ -1,5 +1,6 @@
 package com.cs407.finalproject
 
+import android.content.Context
 import android.content.Intent
 import android.location.Geocoder
 import android.net.Uri
@@ -11,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.ToggleButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -112,28 +114,26 @@ class FeedActivity : AppCompatActivity() {
                     holder.geotagText.visibility = View.GONE
                 }
 
-                // Initialize like button state
-                holder.likeButton.isSelected = false // Default to unliked (or adapt based on saved state)
-
-                //THIS SHOWS LIKE COUNT FOR TESTING
-                //holder.likeButton.text = "Like (${post.likes})"
-
-                // Handle like button toggle
-                holder.likeButton.setOnClickListener {
-                    if (holder.likeButton.isSelected) {
-                        // Unlike the post
-                        post.likes--
-                        holder.likeButton.isSelected = false
-                    } else {
-                        // Like the post
-                        post.likes++
-                        holder.likeButton.isSelected = true
-                    }
-
-                    // Update database and UI
-                    postDatabaseHelper.updateLikes(post.id, post.likes)
+                // Post liking logic
+                val currentUserId = getCurrentUserId()
+                if (currentUserId != null) {
+                    // Initialize like button state based on database
+                    val isLiked = postDatabaseHelper.hasUserLikedPost(post.id, currentUserId)
+                    holder.likeButton.isChecked = isLiked
                     holder.likeButton.text = "Like (${post.likes})"
+
+                    // Handle like button toggle
+                    holder.likeButton.setOnClickListener {
+                        postDatabaseHelper.toggleLike(post.id, currentUserId)
+                        // Update likes count in UI
+                        post.likes = if (holder.likeButton.isChecked) post.likes + 1 else post.likes - 1
+                        holder.likeButton.text = "Like (${post.likes})"
+                    }
+                } else {
+                    holder.likeButton.isEnabled = false
+                    holder.likeButton.text = "Login to like"
                 }
+
             }
 
             override fun getItemCount(): Int = posts.size
@@ -163,11 +163,16 @@ class FeedActivity : AppCompatActivity() {
             callback("$latitude, $longitude")
         }
     }
+
+    private fun getCurrentUserId(): Int? {
+        val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+        return sharedPref.getInt("LOGGED_IN_USER_ID", -1).takeIf { it != -1 }
+    }
 }
 
 class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     val postImage: ImageView = view.findViewById(R.id.mainImage)
-    val likeButton: Button = view.findViewById(R.id.button_favorite)
+    val likeButton: ToggleButton = view.findViewById(R.id.button_favorite)
     val captionText: TextView = view.findViewById(R.id.Caption)
     val geotagText: TextView = view.findViewById(R.id.Geotag)
 }

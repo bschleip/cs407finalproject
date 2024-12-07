@@ -52,27 +52,6 @@ class PostHandler : AppCompatActivity() {
 
     private var lastTapTime: Long = 0
 
-    //TODO Implement the click handler for the like button
-//    private fun setupDoubleTapListener() {
-//        imageView.setOnTouchListener { view, event ->
-//            when (event.action) {
-//                MotionEvent.ACTION_DOWN -> {
-//                    val currentTime = System.currentTimeMillis()
-//                    val tapTime = currentTime - lastTapTime
-//                    if (tapTime < 300) {  // Double tap threshold
-//                        buttonFavorite.isChecked = true
-//                        buttonFavorite.startAnimation(scaleAnimation)
-//                        true
-//                    } else {
-//                        lastTapTime = currentTime
-//                        false
-//                    }
-//                }
-//                else -> false
-//            }
-//        }
-//    }
-
     private fun updateLikeCount(isLiked: Boolean) {
         // TODO implement counting logic
     }
