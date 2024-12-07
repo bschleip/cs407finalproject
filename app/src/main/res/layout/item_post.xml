@@ -1,43 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="8dp">
 
+    android:paddingBottom="16dp">
+
+    <!-- Full-width image -->
     <ImageView
-        android:id="@+id/post_image"
+        android:id="@+id/mainImage"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="centerCrop"
-        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintWidth_percent="1"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+         />
 
-    <Button
-        android:id="@+id/like_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Like"
-        app:layout_constraintTop_toBottomOf="@id/post_image"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="8dp" />
+    <!-- Like button aligned to the right -->
+    <ToggleButton
+        android:id="@+id/button_favorite"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@drawable/button_favorite"
+        android:checked="false"
+        android:textOff=""
+        android:textOn=""
+        app:layout_constraintTop_toBottomOf="@id/mainImage"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="16dp" />
 
+    <!-- Geotag aligned to the top-left -->
     <TextView
-        android:id="@+id/geotag_text"
+        android:id="@+id/Geotag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Geotag"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/like_button"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:text="📍 Geotag"
+        android:textSize="14sp"
+        app:layout_constraintTop_toTopOf="@id/button_favorite"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <!-- Caption aligned below the geotag -->
     <TextView
-        android:id="@+id/caption_text"
-        android:layout_width="wrap_content"
+        android:id="@+id/Caption"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
         android:text="Caption"
-        app:layout_constraintTop_toBottomOf="@id/geotag_text"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/Geotag"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/button_favorite" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

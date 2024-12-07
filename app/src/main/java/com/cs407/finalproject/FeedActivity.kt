@@ -48,8 +48,7 @@ class FeedActivity : AppCompatActivity() {
             startActivity(intent)
         }
         profileBtn.setOnClickListener {
-            startActivity(Intent(this, ProfileActivity::class.java)
-            )
+            startActivity(Intent(this, ProfileActivity::class.java))
         }
     }
 
@@ -85,7 +84,7 @@ class FeedActivity : AppCompatActivity() {
         return object : RecyclerView.Adapter<PostViewHolder>() {
             override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
                 val view = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.activity_post_view, parent, false)
+                    .inflate(R.layout.item_post, parent, false)
                 return PostViewHolder(view)
             }
 
@@ -113,9 +112,25 @@ class FeedActivity : AppCompatActivity() {
                     holder.geotagText.visibility = View.GONE
                 }
 
-                // Handle like button
+                // Initialize like button state
+                holder.likeButton.isSelected = false // Default to unliked (or adapt based on saved state)
+
+                //THIS SHOWS LIKE COUNT FOR TESTING
+                //holder.likeButton.text = "Like (${post.likes})"
+
+                // Handle like button toggle
                 holder.likeButton.setOnClickListener {
-                    post.likes++
+                    if (holder.likeButton.isSelected) {
+                        // Unlike the post
+                        post.likes--
+                        holder.likeButton.isSelected = false
+                    } else {
+                        // Like the post
+                        post.likes++
+                        holder.likeButton.isSelected = true
+                    }
+
+                    // Update database and UI
                     postDatabaseHelper.updateLikes(post.id, post.likes)
                     holder.likeButton.text = "Like (${post.likes})"
                 }
@@ -124,6 +139,7 @@ class FeedActivity : AppCompatActivity() {
             override fun getItemCount(): Int = posts.size
         }
     }
+
 
     private fun getAddressFromLocation(latitude: Double, longitude: Double, callback: (String) -> Unit) {
         try {
