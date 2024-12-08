@@ -5,12 +5,13 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
+import androidx.core.database.getDoubleOrNull
 import java.security.MessageDigest
 
 class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
-        private const val DATABASE_VERSION = 3
+        private const val DATABASE_VERSION = 5
         private const val DATABASE_NAME = "UserDatabase.db"
 
         // Users table columns
@@ -34,6 +35,12 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         private const val TABLE_LIKES = "user_likes"
         private const val COLUMN_LIKE_POST_ID = "post_id"
         private const val COLUMN_LIKE_USER_ID = "user_id"
+
+        // Friends table columns
+        private const val TABLE_FRIENDS = "friends"
+        private const val COLUMN_FRIEND_USER_ID = "user_id"
+        private const val COLUMN_FRIEND_ID = "friend_id"
+
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -69,6 +76,19 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
             )
         """.trimIndent()
 
+        val createFriendsTable = """
+            CREATE TABLE $TABLE_FRIENDS (
+                $COLUMN_FRIEND_USER_ID INTEGER NOT NULL,
+                $COLUMN_FRIEND_ID INTEGER NOT NULL,
+                PRIMARY KEY ($COLUMN_FRIEND_USER_ID, $COLUMN_FRIEND_ID),
+                FOREIGN KEY($COLUMN_FRIEND_USER_ID) REFERENCES $TABLE_USERS($COLUMN_ID) ON DELETE CASCADE,
+                FOREIGN KEY($COLUMN_FRIEND_ID) REFERENCES $TABLE_USERS($COLUMN_ID) ON DELETE CASCADE
+            )
+        """.trimIndent()
+
+        db.execSQL(createFriendsTable)
+
+
         db.execSQL(createUsersTable)
         db.execSQL(createPostsTable)
         db.execSQL(createLikesTable)
@@ -78,6 +98,7 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         db.execSQL("DROP TABLE IF EXISTS $TABLE_USERS")
         db.execSQL("DROP TABLE IF EXISTS $TABLE_POSTS")
         db.execSQL("DROP TABLE IF EXISTS $TABLE_LIKES ")
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_FRIENDS")
         onCreate(db)
     }
 
@@ -315,4 +336,144 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
             if (cursor.moveToFirst()) cursor.getInt(0) else 0
         }
     }
+
+    fun addFriend(userId: Int, friendUsername: String): Boolean {
+        val db = this.writableDatabase
+        val friendId = getUserIdByUsername(friendUsername)
+        return if (friendId != null && friendId != userId) {
+            val values = ContentValues().apply {
+                put(COLUMN_FRIEND_USER_ID, userId)
+                put(COLUMN_FRIEND_ID, friendId)
+            }
+            db.insert(TABLE_FRIENDS, null, values) != -1L
+        } else {
+            false
+        }
+    }
+
+    private fun getUserIdByUsername(username: String): Int? {
+        val db = this.readableDatabase
+        val cursor = db.query(
+            TABLE_USERS, arrayOf(COLUMN_ID),
+            "$COLUMN_USERNAME = ?", arrayOf(username),
+            null, null, null
+        )
+        return cursor.use {
+            if (it.moveToFirst()) it.getInt(0) else null
+        }
+    }
+
+    fun getFriendList(userId: Int): List<Int> {
+        val friendList = mutableListOf<Int>()
+        val db = readableDatabase
+        val cursor = db.query(
+            "friends",
+            arrayOf("friendId"),
+            "userId=?",
+            arrayOf(userId.toString()),
+            null,
+            null,
+            null
+        )
+        while (cursor.moveToNext()) {
+            friendList.add(cursor.getInt(cursor.getColumnIndexOrThrow("friendId")))
+        }
+        cursor.close()
+        return friendList
+    }
+
+    fun getPostsByUserIds(userIds: List<Int>): List<Post> {
+        if (userIds.isEmpty()) return emptyList()
+
+        val db = this.readableDatabase
+        val posts = mutableListOf<Post>()
+        val userIdString = userIds.joinToString(",") // Convert list to a comma-separated string
+
+        val query = """
+        SELECT * FROM $TABLE_POSTS
+        WHERE $COLUMN_USER_ID IN ($userIdString)
+        ORDER BY $COLUMN_TIMESTAMP DESC
+    """
+
+        val cursor = db.rawQuery(query, null)
+        try {
+            while (cursor.moveToNext()) {
+                val post = Post(
+                    id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_POST_ID)),
+                    userId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_ID)),
+                    imageUri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_IMAGE_URI)),
+                    caption = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CAPTION)),
+                    likes = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_LIKES)),
+                    timestamp = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)),
+                    latitude = cursor.getDoubleOrNull(cursor.getColumnIndexOrThrow(COLUMN_LATITUDE)),
+                    longitude = cursor.getDoubleOrNull(cursor.getColumnIndexOrThrow(COLUMN_LONGITUDE))
+                )
+                posts.add(post)
+            }
+        } finally {
+            cursor.close()
+            db.close()
+        }
+        return posts
+    }
+
+
+    fun getCurrentUserId(): Int? {
+        val db = readableDatabase
+        val cursor = db.query(
+            "users",
+            arrayOf("id"),
+            "isLoggedIn = ?",
+            arrayOf("1"), // Assuming 'isLoggedIn' column indicates the current logged-in user
+            null,
+            null,
+            null
+        )
+
+        return if (cursor.moveToFirst()) {
+            val userId = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
+            cursor.close()
+            userId
+        } else {
+            cursor.close()
+            null
+        }
+    }
+
+
+
+    fun getFriends(userId: Int): List<Int> {
+        val db = this.readableDatabase
+        val friendIds = mutableListOf<Int>()
+        val query = """
+        SELECT u.$COLUMN_ID FROM $TABLE_USERS u
+        INNER JOIN $TABLE_FRIENDS f ON u.$COLUMN_ID = f.$COLUMN_FRIEND_ID
+        WHERE f.$COLUMN_FRIEND_USER_ID = ?
+    """
+        val cursor = db.rawQuery(query, arrayOf(userId.toString()))
+        cursor.use {
+            while (it.moveToNext()) {
+                friendIds.add(it.getInt(0)) // Get user ID instead of username
+            }
+        }
+        return friendIds
+    }
+
+    fun removeFriend(userId: Int, friendUsername: String): Boolean {
+        val db = this.writableDatabase
+        val friendId = getUserIdByUsername(friendUsername)
+        return if (friendId != null) {
+            db.delete(
+                TABLE_FRIENDS,
+                "$COLUMN_FRIEND_USER_ID = ? AND $COLUMN_FRIEND_ID = ?",
+                arrayOf(userId.toString(), friendId.toString())
+            ) > 0
+        } else {
+            false
+        }
+    }
+
+
+
+
 }

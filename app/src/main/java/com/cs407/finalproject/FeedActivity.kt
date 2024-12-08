@@ -27,6 +27,8 @@ class FeedActivity : AppCompatActivity() {
     private lateinit var adapter: RecyclerView.Adapter<PostViewHolder>
 
     private var posts = listOf<Post>()
+    private var postsFromFriends = listOf<Post>()
+    private var friendsList = listOf<Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,14 +63,18 @@ class FeedActivity : AppCompatActivity() {
 
     private fun loadPosts() {
         posts = fetchPosts()
+        friendsList = fetchFriendsList()
 
-        if (posts.isEmpty()) {
+        postsFromFriends = posts.filter {  post ->
+            friendsList.contains(post.userId) }
+
+        if (postsFromFriends.isEmpty()) {
             noPostsText.visibility = View.VISIBLE
             recyclerView.visibility = View.GONE
         } else {
             noPostsText.visibility = View.GONE
             recyclerView.visibility = View.VISIBLE
-            adapter = createPostAdapter(posts)
+            adapter = createPostAdapter(postsFromFriends)
             recyclerView.adapter = adapter
         }
     }
@@ -81,6 +87,22 @@ class FeedActivity : AppCompatActivity() {
             emptyList()
         }
     }
+
+    private fun fetchFriendsList(): List<Int> {
+        val currentUserId = getCurrentUserId()
+        return if (currentUserId != null) {
+            try {
+                postDatabaseHelper.getFriends(currentUserId)
+            } catch (e: Exception) {
+                Log.e("FeedActivity", "Error fetching friends list: ${e.message}")
+                emptyList()
+            }
+        } else {
+            Log.e("FeedActivity", "No logged-in user found.")
+            emptyList()
+        }
+    }
+
 
     private fun createPostAdapter(posts: List<Post>): RecyclerView.Adapter<PostViewHolder> {
         return object : RecyclerView.Adapter<PostViewHolder>() {
@@ -124,18 +146,18 @@ class FeedActivity : AppCompatActivity() {
                     // Initialize like button state based on database
                     val isLiked = postDatabaseHelper.hasUserLikedPost(post.id, currentUserId)
                     holder.likeButton.isChecked = isLiked
-                    holder.likeButton.text = "Like (${post.likes})"
+                    //holder.likeButton.text = "Like (${post.likes})"
 
                     // Handle like button toggle
                     holder.likeButton.setOnClickListener {
                         postDatabaseHelper.toggleLike(post.id, currentUserId)
                         // Update likes count in UI
                         post.likes = if (holder.likeButton.isChecked) post.likes + 1 else post.likes - 1
-                        holder.likeButton.text = "Like (${post.likes})"
+                        //holder.likeButton.text = "Like (${post.likes})"
                     }
                 } else {
                     holder.likeButton.isEnabled = false
-                    holder.likeButton.text = "Login to like"
+                    //holder.likeButton.text = "Login to like"
                 }
 
             }

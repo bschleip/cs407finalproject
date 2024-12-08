@@ -12,6 +12,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -108,8 +109,30 @@ class CameraActivity : AppCompatActivity() {
         }
 
         addFriendButton.setOnClickListener {
-            val friendUsername = addFriendEditText.text.toString()
-            // TODO: handle friend searching
+            val friendUsername = addFriendEditText.text.toString().trim()
+            val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+            val userId = sharedPref.getInt("LOGGED_IN_USER_ID", -1)
+
+            if (friendUsername.isEmpty()) {
+                Toast.makeText(this, "Please enter a username.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (userId == -1) {
+                Toast.makeText(this, "User not logged in.", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+                return@setOnClickListener
+            }
+
+            val dbHelper = UserDatabaseHelper(this)
+            val success = dbHelper.addFriend(userId, friendUsername)
+
+            if (success) {
+                Toast.makeText(this, "Friend added successfully!", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Failed to add friend. User may not exist or is already a friend.", Toast.LENGTH_SHORT).show()
+            }
+
             dialog.dismiss()
         }
 
