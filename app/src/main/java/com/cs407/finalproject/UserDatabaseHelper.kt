@@ -417,10 +417,6 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         return posts
     }
 
-
-
-
-
     fun getFriends(userId: Int): List<Int> {
         val db = this.readableDatabase
         val friendIds = mutableListOf<Int>()

@@ -64,9 +64,11 @@ class FeedActivity : AppCompatActivity() {
     private fun loadPosts() {
         posts = fetchPosts()
         friendsList = fetchFriendsList()
+        val currentUserId = getCurrentUserId()
 
         postsFromFriends = posts.filter {  post ->
-            friendsList.contains(post.userId) }
+            friendsList.contains(post.userId)  || post.userId == currentUserId
+        }
 
         if (postsFromFriends.isEmpty()) {
             noPostsText.visibility = View.VISIBLE

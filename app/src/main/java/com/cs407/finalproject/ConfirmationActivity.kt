@@ -88,12 +88,7 @@ class  ConfirmationActivity : AppCompatActivity() {
         saveButton.setOnClickListener {
             this.includeLocation = switchIncludeLocation.isChecked
             this.caption = captionEditText.text.toString()
-
-            // TODO: add caption to the post
-
-            if (includeLocation) {
-                checkLocationPermissionAndGetLocation()
-            }
+            if (includeLocation) { checkLocationPermissionAndGetLocation() }
             dialog.dismiss()
         }
         dialog.show()
