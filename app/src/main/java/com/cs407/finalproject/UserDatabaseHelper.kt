@@ -7,6 +7,9 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 import androidx.core.database.getDoubleOrNull
 import java.security.MessageDigest
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
@@ -59,7 +62,7 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                 $COLUMN_IMAGE_URI TEXT NOT NULL,
                 $COLUMN_CAPTION TEXT,
                 $COLUMN_LIKES INTEGER DEFAULT 0,
-                $COLUMN_TIMESTAMP DATETIME DEFAULT CURRENT_TIMESTAMP,
+                $COLUMN_TIMESTAMP DATETIME DEFAULT (datetime('now', 'localtime')),
                 $COLUMN_LATITUDE REAL,
                 $COLUMN_LONGITUDE REAL,
                 FOREIGN KEY($COLUMN_USER_ID) REFERENCES $TABLE_USERS($COLUMN_ID)
@@ -191,7 +194,8 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
             put(COLUMN_IMAGE_URI, imageUri)
             put(COLUMN_CAPTION, caption)
             put(COLUMN_LIKES, 0) // Initial likes count
-            put(COLUMN_TIMESTAMP, System.currentTimeMillis())
+            put(COLUMN_TIMESTAMP, SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                .format(Date()))
             put(COLUMN_LATITUDE, latitude)
             put(COLUMN_LONGITUDE, longitude)
         }
@@ -205,18 +209,73 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         }
     }
 
-    fun getAllPosts(): List<Post> {
+    fun getShenaniganOfTheDay(): Post? {
+        val db = this.readableDatabase
+        // First try to get today's most liked post
+        var cursor = db.rawQuery(
+            """
+        SELECT * FROM $TABLE_POSTS
+        WHERE date($COLUMN_TIMESTAMP) = date('now', 'localtime')
+        ORDER BY $COLUMN_LIKES DESC, $COLUMN_TIMESTAMP DESC
+        LIMIT 1
+        """, null
+        )
+
+        // If no posts today, get the most recent previous Shenanigan of the Day
+        if (!cursor.moveToFirst()) {
+            cursor.close()
+            cursor = db.rawQuery(
+                """
+            SELECT * FROM $TABLE_POSTS
+            WHERE date($COLUMN_TIMESTAMP) < date('now', 'localtime')
+            ORDER BY date($COLUMN_TIMESTAMP) DESC, $COLUMN_LIKES DESC
+            LIMIT 1
+            """, null
+            )
+        }
+
+        return if (cursor.moveToFirst()) {
+            Post(
+                id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_POST_ID)),
+                userId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_ID)),
+                imageUri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_IMAGE_URI)),
+                caption = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CAPTION)),
+                likes = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_LIKES)),
+                timestamp = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)),
+                latitude = if (cursor.isNull(cursor.getColumnIndexOrThrow(COLUMN_LATITUDE))) null
+                else cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LATITUDE)),
+                longitude = if (cursor.isNull(cursor.getColumnIndexOrThrow(COLUMN_LONGITUDE))) null
+                else cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LONGITUDE))
+            )
+        } else {
+            null
+        }.also {
+            cursor.close()
+        }
+    }
+
+    fun getAllPosts(excludeShenanigan: Boolean = true): List<Post> {
         val posts = mutableListOf<Post>()
         val db = this.readableDatabase
+
+        // Get current Shenanigan of the Day ID to exclude
+        val shenanigan = if (excludeShenanigan) getShenaniganOfTheDay() else null
+        val shenaniganId = shenanigan?.id
+
+        // Build query with optional exclusion
+        val selection = if (shenaniganId != null) "$COLUMN_POST_ID != ?" else null
+        val selectionArgs = if (shenaniganId != null) arrayOf(shenaniganId.toString()) else null
+
         val cursor = db.query(
             TABLE_POSTS,
             null,
-            null,
-            null,
+            selection,
+            selectionArgs,
             null,
             null,
             "$COLUMN_TIMESTAMP DESC"
         )
+
         try {
             if (cursor.moveToFirst()) {
                 do {
@@ -228,49 +287,18 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                         likes = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_LIKES)),
                         timestamp = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)),
                         latitude = if (cursor.isNull(cursor.getColumnIndexOrThrow(COLUMN_LATITUDE))) null
-                                    else cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LATITUDE)),
+                        else cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LATITUDE)),
                         longitude = if (cursor.isNull(cursor.getColumnIndexOrThrow(COLUMN_LONGITUDE))) null
-                                    else cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LONGITUDE))
+                        else cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LONGITUDE))
                     )
                     posts.add(post)
                 } while (cursor.moveToNext())
             }
         } finally {
             cursor.close()
-            db.close()
+            db.close() // Only close the database here, after all operations are complete
         }
-    return posts
-    }
-
-    fun getFeaturedPost(): Post? {
-        val db = this.readableDatabase
-        val cursor = db.rawQuery(
-            """
-                SELECT * FROM $TABLE_POSTS
-                WHERE DATE($COLUMN_TIMESTAMP) = DATE('now')
-                ORDER BY $COLUMN_LIKES DESC
-                LIMIT 1
-            """, null
-        )
-        return if (cursor.moveToFirst()) {
-            Post(
-                id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_POST_ID)),
-                userId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_ID)),
-                imageUri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_IMAGE_URI)),
-                caption = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CAPTION)),
-                likes = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_LIKES)),
-                timestamp = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)),
-                latitude = if (cursor.isNull(cursor.getColumnIndexOrThrow(COLUMN_LATITUDE))) null
-                            else cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LATITUDE)),
-                longitude = if (cursor.isNull(cursor.getColumnIndexOrThrow(COLUMN_LONGITUDE))) null
-                            else cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LONGITUDE))
-            )
-        } else {
-            null
-        }.also {
-            cursor.close()
-            db.close()
-        }
+        return posts
     }
 
     // Like counting-related methods
@@ -322,6 +350,7 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         }
     }
 
+    // TODO: we should probably show the like counting
     fun getLikeCount(postId: Int): Int {
         val db = this.readableDatabase
         return db.query(
@@ -337,21 +366,35 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         }
     }
 
+    // Friend-related methods
     fun addFriend(userId: Int, friendUsername: String): Boolean {
         val db = this.writableDatabase
         val friendId = getUserIdByUsername(friendUsername)
         return if (friendId != null && friendId != userId) {
-            val values = ContentValues().apply {
-                put(COLUMN_FRIEND_USER_ID, userId)
-                put(COLUMN_FRIEND_ID, friendId)
+            db.beginTransaction()
+            try {
+                // Add friendship in both directions
+                val values1 = ContentValues().apply {
+                    put(COLUMN_FRIEND_USER_ID, userId)
+                    put(COLUMN_FRIEND_ID, friendId)
+                }
+                val values2 = ContentValues().apply {
+                    put(COLUMN_FRIEND_USER_ID, friendId)
+                    put(COLUMN_FRIEND_ID, userId)
+                }
+                val success = db.insert(TABLE_FRIENDS, null, values1) != -1L &&
+                        db.insert(TABLE_FRIENDS, null, values2) != -1L
+                db.setTransactionSuccessful()
+                success
+            } finally {
+                db.endTransaction()
             }
-            db.insert(TABLE_FRIENDS, null, values) != -1L
         } else {
             false
         }
     }
 
-    fun getUserIdByUsername(username: String): Int? {
+    private fun getUserIdByUsername(username: String): Int? {
         val db = this.readableDatabase
         val cursor = db.query(
             TABLE_USERS, arrayOf(COLUMN_ID),
@@ -363,6 +406,7 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         }
     }
 
+    // TODO: this function is unused; we can get rid of it if it's unnecessary
     fun getFriendList(userId: Int): List<Int> {
         val friendList = mutableListOf<Int>()
         val db = readableDatabase
@@ -382,6 +426,7 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         return friendList
     }
 
+    // TODO: this function is unused; we can get rid of it if it's unnecessary
     fun getPostsByUserIds(userIds: List<Int>): List<Post> {
         if (userIds.isEmpty()) return emptyList()
 
@@ -438,17 +483,27 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         val db = this.writableDatabase
         val friendId = getUserIdByUsername(friendUsername)
         return if (friendId != null) {
-            db.delete(
-                TABLE_FRIENDS,
-                "$COLUMN_FRIEND_USER_ID = ? AND $COLUMN_FRIEND_ID = ?",
-                arrayOf(userId.toString(), friendId.toString())
-            ) > 0
+            db.beginTransaction()
+            try {
+                // Remove friendship in both directions
+                val count1 = db.delete(
+                    TABLE_FRIENDS,
+                    "$COLUMN_FRIEND_USER_ID = ? AND $COLUMN_FRIEND_ID = ?",
+                    arrayOf(userId.toString(), friendId.toString())
+                )
+                val count2 = db.delete(
+                    TABLE_FRIENDS,
+                    "$COLUMN_FRIEND_USER_ID = ? AND $COLUMN_FRIEND_ID = ?",
+                    arrayOf(friendId.toString(), userId.toString())
+                )
+                val success = count1 > 0 && count2 > 0
+                db.setTransactionSuccessful()
+                success
+            } finally {
+                db.endTransaction()
+            }
         } else {
             false
         }
     }
-
-
-
-
 }

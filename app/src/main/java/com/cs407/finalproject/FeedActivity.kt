@@ -62,21 +62,33 @@ class FeedActivity : AppCompatActivity() {
     }
 
     private fun loadPosts() {
+        // Fetch Shenanigan of the Day
+        val shenanigan = fetchShenanigan()
+
+        // Fetch regular posts (already excludes Shenanigan)
         posts = fetchPosts()
         friendsList = fetchFriendsList()
         val currentUserId = getCurrentUserId()
 
-        postsFromFriends = posts.filter {  post ->
-            friendsList.contains(post.userId)  || post.userId == currentUserId
+        // Filter posts from friends and current user
+        postsFromFriends = posts.filter { post ->
+            friendsList.contains(post.userId) || post.userId == currentUserId
         }
 
-        if (postsFromFriends.isEmpty()) {
+        // Handle visibility
+        if (shenanigan == null && postsFromFriends.isEmpty()) {
             noPostsText.visibility = View.VISIBLE
             recyclerView.visibility = View.GONE
         } else {
             noPostsText.visibility = View.GONE
             recyclerView.visibility = View.VISIBLE
-            adapter = createPostAdapter(postsFromFriends)
+
+            // Combine Shenanigan with filtered posts
+            val allPosts = mutableListOf<Post>()
+            shenanigan?.let { allPosts.add(it) }
+            allPosts.addAll(postsFromFriends)
+
+            adapter = createPostAdapter(allPosts)
             recyclerView.adapter = adapter
         }
     }
@@ -105,6 +117,14 @@ class FeedActivity : AppCompatActivity() {
         }
     }
 
+    private fun fetchShenanigan(): Post? {
+        return try {
+            postDatabaseHelper.getShenaniganOfTheDay()
+        } catch (e: Exception) {
+            Log.e("FeedActivity", "Error fetching Shenanigan of the Day: ${e.message}")
+            null
+        }
+    }
 
     private fun createPostAdapter(posts: List<Post>): RecyclerView.Adapter<PostViewHolder> {
         return object : RecyclerView.Adapter<PostViewHolder>() {
@@ -122,7 +142,7 @@ class FeedActivity : AppCompatActivity() {
                 holder.usernameText.text = username
 
                 // Bind image
-                if (!post.imageUri.isNullOrEmpty()) {
+                if (post.imageUri.isNotEmpty()) {
                     holder.postImage.visibility = View.VISIBLE
                     holder.postImage.setImageURI(Uri.parse(post.imageUri))
                 } else {
@@ -156,6 +176,10 @@ class FeedActivity : AppCompatActivity() {
                         // Update likes count in UI
                         post.likes = if (holder.likeButton.isChecked) post.likes + 1 else post.likes - 1
                         //holder.likeButton.text = "Like (${post.likes})"
+
+                        holder.itemView.post {
+                            loadPosts()
+                        }
                     }
                 } else {
                     holder.likeButton.isEnabled = false
@@ -167,7 +191,6 @@ class FeedActivity : AppCompatActivity() {
             override fun getItemCount(): Int = posts.size
         }
     }
-
 
     private fun getAddressFromLocation(latitude: Double, longitude: Double, callback: (String) -> Unit) {
         try {
