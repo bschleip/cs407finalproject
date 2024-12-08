@@ -245,7 +245,8 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                 latitude = if (cursor.isNull(cursor.getColumnIndexOrThrow(COLUMN_LATITUDE))) null
                 else cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LATITUDE)),
                 longitude = if (cursor.isNull(cursor.getColumnIndexOrThrow(COLUMN_LONGITUDE))) null
-                else cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LONGITUDE))
+                else cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LONGITUDE)),
+                isShenanigan = true
             )
         } else {
             null

@@ -14,8 +14,13 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.ToggleButton
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale
 
 class FeedActivity : AppCompatActivity() {
@@ -139,7 +144,15 @@ class FeedActivity : AppCompatActivity() {
 
                 // Set username
                 val username = postDatabaseHelper.getUsernameById(post.userId)
-                holder.usernameText.text = username
+                holder.usernameButton.text = username
+
+                holder.usernameButton.setOnClickListener {
+                    val intent = Intent(this@FeedActivity, ProfileActivity::class.java).apply {
+                        putExtra("USER_ID", post.userId) // TODO: make the ProfileActivity receive this information
+                                                                // This sends the userId so ProfileActivity can pull up the right profile.
+                    }
+                    startActivity(intent)
+                }
 
                 // Bind image
                 if (post.imageUri.isNotEmpty()) {
@@ -148,6 +161,9 @@ class FeedActivity : AppCompatActivity() {
                 } else {
                     holder.postImage.visibility = View.GONE
                 }
+
+                // Bind number of likes
+                holder.likesCountText.text = post.likes.toString()
 
                 // Bind caption
                 holder.captionText.text = post.caption ?: ""
@@ -168,27 +184,43 @@ class FeedActivity : AppCompatActivity() {
                     // Initialize like button state based on database
                     val isLiked = postDatabaseHelper.hasUserLikedPost(post.id, currentUserId)
                     holder.likeButton.isChecked = isLiked
-                    //holder.likeButton.text = "Like (${post.likes})"
 
                     // Handle like button toggle
                     holder.likeButton.setOnClickListener {
                         postDatabaseHelper.toggleLike(post.id, currentUserId)
                         // Update likes count in UI
                         post.likes = if (holder.likeButton.isChecked) post.likes + 1 else post.likes - 1
-                        //holder.likeButton.text = "Like (${post.likes})"
+                        holder.likesCountText.text = post.likes.toString()
 
-                        holder.itemView.post {
-                            loadPosts()
-                        }
+                        // Instead of reloading all posts, just update the Shenanigan in background
+                        updateShenanigan()
                     }
                 } else {
                     holder.likeButton.isEnabled = false
-                    //holder.likeButton.text = "Login to like"
                 }
 
             }
 
             override fun getItemCount(): Int = posts.size
+        }
+    }
+
+    private fun updateShenanigan() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val newShenanigan = fetchShenanigan()
+            withContext(Dispatchers.Main) {
+                val currentPosts = posts.toMutableList()
+                // If there was a previous Shenanigan, remove it (assuming it's always first)
+                if (currentPosts.isNotEmpty() && currentPosts[0].isShenanigan) {
+                    currentPosts.removeAt(0)
+                }
+                // Add new Shenanigan if exists
+                newShenanigan?.let { currentPosts.add(0, it) }
+
+                // Update adapter with new list without recreating it
+                posts = currentPosts
+                adapter.notifyDataSetChanged()
+            }
         }
     }
 
@@ -222,9 +254,10 @@ class FeedActivity : AppCompatActivity() {
 }
 
 class PostViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-    val usernameText: TextView = view.findViewById(R.id.username)
+    val usernameButton: MaterialButton = view.findViewById(R.id.username)
     val postImage: ImageView = view.findViewById(R.id.mainImage)
     val likeButton: ToggleButton = view.findViewById(R.id.button_favorite)
+    val likesCountText: TextView = view.findViewById(R.id.likes_count)
     val captionText: TextView = view.findViewById(R.id.Caption)
     val geotagText: TextView = view.findViewById(R.id.Geotag)
 }

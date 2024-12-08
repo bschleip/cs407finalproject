@@ -8,7 +8,8 @@ data class Post(
     var likes: Int,
     val timestamp: String,
     val latitude: Double?,
-    val longitude: Double?
+    val longitude: Double?,
+    val isShenanigan: Boolean = false
 ) {
     override fun toString(): String {
         return "Post(id=$id, imageUri=$imageUri, caption=$caption, timestamp=$timestamp)"

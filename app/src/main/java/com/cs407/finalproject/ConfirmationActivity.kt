@@ -1,6 +1,5 @@
 package com.cs407.finalproject
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -21,6 +20,10 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import android.Manifest
 import android.location.LocationManager
+import android.view.View
+import android.widget.ProgressBar
+import androidx.activity.OnBackPressedCallback
+import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import com.google.android.gms.location.Priority
 
 
@@ -30,6 +33,8 @@ class  ConfirmationActivity : AppCompatActivity() {
     private lateinit var addInfoButton: Button
     private lateinit var postButton: Button
     private lateinit var confirmationImage: ImageView
+    private lateinit var progressBar: ProgressBar
+
     private lateinit var userDatabaseHelper: UserDatabaseHelper
 
     private var imageUri: Uri? = null
@@ -55,18 +60,31 @@ class  ConfirmationActivity : AppCompatActivity() {
         addInfoButton = findViewById(R.id.addInfoButton)
         postButton = findViewById(R.id.postButton)
         confirmationImage = findViewById(R.id.confirmationImage)
+        progressBar = findViewById(R.id.progressBar)
 
-        imageUri?.let {
-            confirmationImage.setImageURI(it)
-        }
+        imageUri?.let { confirmationImage.setImageURI(it) }
 
-        retakeButton.setOnClickListener {
-            startActivity(Intent(this, CameraActivity::class.java))
-        }
+        retakeButton.setOnClickListener { showDiscardDialog() }
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() { showDiscardDialog() }
+        })
 
         addInfoButton.setOnClickListener { showAddInfoDialog() }
 
         postButton.setOnClickListener { savePostToDatabase() }
+    }
+
+    private fun showDiscardDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Discard Post?")
+            .setMessage("Are you sure you want to go back? Your post will be discarded.")
+            .setPositiveButton("Discard") { _, _ ->
+                finish()
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun showAddInfoDialog() {
@@ -76,6 +94,9 @@ class  ConfirmationActivity : AppCompatActivity() {
         val captionEditText = dialogView.findViewById<EditText>(R.id.captionEditText)
         val cancelButton = dialogView.findViewById<Button>(R.id.cancelButton)
         val saveButton = dialogView.findViewById<Button>(R.id.saveButton)
+
+        switchIncludeLocation.isChecked = includeLocation
+        caption?.let { captionEditText.setText(it) }
 
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
@@ -94,6 +115,7 @@ class  ConfirmationActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    // Location methods
     private fun checkLocationPermissionAndGetLocation() {
         when {
             ContextCompat.checkSelfPermission(
@@ -118,23 +140,39 @@ class  ConfirmationActivity : AppCompatActivity() {
             }
         }
 
-    @SuppressLint("MissingPermission")
     private fun getLastLocation() {
-        Log.d("getLastLocation", "getLastLocation entry")
+        progressBar.visibility = View.VISIBLE
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED) {
+            Log.e("ConfirmationActivity", "Location permission not granted")
+            Toast.makeText(this, "Location permission required", Toast.LENGTH_SHORT).show()
+            includeLocation = false
+            return
+        }
+
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location: Location? ->
-                location?.let {
-                    latitude = it.latitude
-                    longitude = it.longitude
-                    Log.d("getLastLocation", "got values: $latitude, $longitude")
+                progressBar.visibility = View.GONE
+                if (location == null) {
+                    Toast.makeText(this, "Unable to get location. Please try again.", Toast.LENGTH_SHORT).show()
+                    includeLocation = false
+                    return@addOnSuccessListener
                 }
+                latitude = location.latitude
+                longitude = location.longitude
             }
             .addOnFailureListener { e ->
+                progressBar.visibility = View.GONE
                 Log.e("ConfirmationActivity", "Error getting location: ${e.message}")
+                Toast.makeText(this, "Failed to get location", Toast.LENGTH_SHORT).show()
+                includeLocation = false
             }
-        Log.d("getLastLocation", "getLastLocation exit")
     }
 
+    // Post saving
     private fun savePostToDatabase() {
 
         if (imageUri == null) {
@@ -158,15 +196,36 @@ class  ConfirmationActivity : AppCompatActivity() {
         if (postId != -1L) {
             val intent = Intent(this, FeedActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+            progressBar.visibility = View.GONE
             startActivity(intent)
             finish()
         } else {
             Toast.makeText(this, "Failed to save post", Toast.LENGTH_SHORT).show()
+            progressBar.visibility = View.GONE
         }
     }
 
     private fun getCurrentUserId(): Int? {
         val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
         return sharedPref.getInt("LOGGED_IN_USER_ID", -1).takeIf { it != -1 }
+    }
+
+    // QOL methods
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("imageUri", imageUri?.toString())
+        outState.putString("caption", caption)
+        outState.putBoolean("includeLocation", includeLocation)
+        outState.putDouble("latitude", latitude ?: 0.0)
+        outState.putDouble("longitude", longitude ?: 0.0)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        imageUri = savedInstanceState.getString("imageUri")?.let { Uri.parse(it) }
+        caption = savedInstanceState.getString("caption")
+        includeLocation = savedInstanceState.getBoolean("includeLocation")
+        latitude = savedInstanceState.getDouble("latitude").takeIf { it != 0.0 }
+        longitude = savedInstanceState.getDouble("longitude").takeIf { it != 0.0 }
     }
 }
