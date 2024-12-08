@@ -351,7 +351,7 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         }
     }
 
-    private fun getUserIdByUsername(username: String): Int? {
+    fun getUserIdByUsername(username: String): Int? {
         val db = this.readableDatabase
         val cursor = db.query(
             TABLE_USERS, arrayOf(COLUMN_ID),
@@ -418,27 +418,6 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
     }
 
 
-    fun getCurrentUserId(): Int? {
-        val db = readableDatabase
-        val cursor = db.query(
-            "users",
-            arrayOf("id"),
-            "isLoggedIn = ?",
-            arrayOf("1"), // Assuming 'isLoggedIn' column indicates the current logged-in user
-            null,
-            null,
-            null
-        )
-
-        return if (cursor.moveToFirst()) {
-            val userId = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
-            cursor.close()
-            userId
-        } else {
-            cursor.close()
-            null
-        }
-    }
 
 
 

@@ -27,7 +27,7 @@ class SettingsActivity : AppCompatActivity() {
         settingsRecyclerView.layoutManager = LinearLayoutManager(this)
         settingsRecyclerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
 
-        val settingsList = listOf("Version: 1.0.0", "Terms and Conditions", "Logout")
+        val settingsList = listOf("Version: 1.0.0", "Terms and Conditions", "Logout", "View Friends")
         settingsRecyclerView.adapter = createSettingsAdapter(settingsList)
 
         backSettingsBtn.setOnClickListener {
@@ -66,6 +66,7 @@ class SettingsActivity : AppCompatActivity() {
             when (setting) {
                 "Terms and Conditions" -> navigateToTerms()
                 "Logout" -> logout()
+                "View Friends" -> navigateToFriends() // New case for "View Friends"
             }
         }
     }
@@ -74,6 +75,12 @@ class SettingsActivity : AppCompatActivity() {
         val intent = Intent(this, TermsAndConditionsActivity::class.java)
         startActivity(intent)
     }
+
+    private fun navigateToFriends() {
+        val intent = Intent(this, FriendsActivity::class.java)
+        startActivity(intent)
+    }
+
 
     private fun logout() {
         val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)

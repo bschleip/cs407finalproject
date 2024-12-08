@@ -57,6 +57,10 @@
             android:name=".TermsAndConditionsActivity"
             android:exported="false">
         </activity>
+        <activity
+            android:name=".FriendsActivity"
+            android:exported="false">
+        </activity>
 
     </application>
 
