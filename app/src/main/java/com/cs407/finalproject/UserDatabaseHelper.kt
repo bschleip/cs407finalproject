@@ -14,7 +14,7 @@ import java.util.Locale
 class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
-        private const val DATABASE_VERSION = 5
+        private const val DATABASE_VERSION = 6
         private const val DATABASE_NAME = "UserDatabase.db"
 
         // Users table columns
@@ -22,6 +22,7 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         private const val COLUMN_ID = "id"
         private const val COLUMN_USERNAME = "username"
         private const val COLUMN_PASSWORD_HASH = "password_hash"
+        private const val COLUMN_BIO = "bio"
 
         // Posts table columns
         private const val TABLE_POSTS = "posts"
@@ -51,7 +52,8 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
             CREATE TABLE $TABLE_USERS (
                 $COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 $COLUMN_USERNAME TEXT UNIQUE NOT NULL,
-                $COLUMN_PASSWORD_HASH TEXT NOT NULL
+                $COLUMN_PASSWORD_HASH TEXT NOT NULL,
+                $COLUMN_BIO TEXT DEFAULT ''
             )
         """.trimIndent()
 
@@ -302,6 +304,11 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         return posts
     }
 
+    fun deletePost(postId: Int) {
+        val db = this.writableDatabase
+        db.delete("posts", "id = ?", arrayOf(postId.toString()))
+    }
+
     // Like counting-related methods
     fun hasUserLikedPost(postId: Int, userId: Int): Boolean {
         val db = this.readableDatabase
@@ -506,5 +513,24 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         } else {
             false
         }
+    }
+
+    // Bio-related functions
+    fun getUserBio(userId: Int): String {
+        val db = this.readableDatabase
+        val cursor = db.query("users", arrayOf("bio"), "id = ?",
+            arrayOf(userId.toString()), null, null, null)
+
+        return cursor.use {
+            if (it.moveToFirst()) it.getString(0) else ""
+        }
+    }
+
+    fun updateUserBio(userId: Int, newBio: String) {
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put("bio", newBio)
+        }
+        db.update("users", values, "id = ?", arrayOf(userId.toString()))
     }
 }

@@ -7,11 +7,12 @@
 
     <ImageView
         android:id="@+id/profileImage"
+        android:src="@android:drawable/ic_menu_gallery"
         android:layout_width="117dp"
         android:layout_height="118dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="32dp"
-        app:layout_constraintBottom_toTopOf="@+id/exampleImage1"
+        app:layout_constraintBottom_toTopOf="@+id/recyclerView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0"
@@ -46,40 +47,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         tools:listitem="@layout/item_post" />
-    <!--        app:layout_constraintBottom_toTopOf="@+id/nav_home"-->
-
-
-
-    <!--    <ImageButton-->
-<!--        android:id="@+id/exampleImage1"-->
-<!--        android:layout_width="95dp"-->
-<!--        android:layout_height="95dp"-->
-<!--        android:layout_marginStart="28dp"-->
-<!--        android:layout_marginTop="64dp"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/profileBio"-->
-<!--        tools:srcCompat="@tools:sample/avatars" />-->
-
-<!--    <ImageButton-->
-<!--        android:id="@+id/exampleImage2"-->
-<!--        android:layout_width="95dp"-->
-<!--        android:layout_height="95dp"-->
-<!--        android:layout_marginTop="64dp"-->
-<!--        app:layout_constraintEnd_toStartOf="@+id/exampleImage3"-->
-<!--        app:layout_constraintHorizontal_bias="0.471"-->
-<!--        app:layout_constraintStart_toEndOf="@+id/exampleImage1"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/profileBio"-->
-<!--        tools:srcCompat="@tools:sample/avatars" />-->
-
-<!--    <ImageButton-->
-<!--        android:id="@+id/exampleImage3"-->
-<!--        android:layout_width="95dp"-->
-<!--        android:layout_height="95dp"-->
-<!--        android:layout_marginTop="64dp"-->
-<!--        android:layout_marginEnd="28dp"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/profileBio"-->
-<!--        tools:srcCompat="@tools:sample/avatars" />-->
 
     <LinearLayout
         android:layout_width="match_parent"

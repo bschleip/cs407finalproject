@@ -61,6 +61,10 @@
             android:name=".FriendsActivity"
             android:exported="false">
         </activity>
+        <activity
+            android:name=".PostDetailActivity"
+            android:exported="false">
+        </activity>
 
     </application>
 
