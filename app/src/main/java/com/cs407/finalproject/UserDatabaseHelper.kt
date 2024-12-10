@@ -14,7 +14,7 @@ import java.util.Locale
 class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
-        private const val DATABASE_VERSION = 6
+        private const val DATABASE_VERSION = 8
         private const val DATABASE_NAME = "UserDatabase.db"
 
         // Users table columns
@@ -23,6 +23,7 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         private const val COLUMN_USERNAME = "username"
         private const val COLUMN_PASSWORD_HASH = "password_hash"
         private const val COLUMN_BIO = "bio"
+        private const val COLUMN_PROFILE_IMAGE_URI = "profile_image_uri"
 
         // Posts table columns
         private const val TABLE_POSTS = "posts"
@@ -53,7 +54,8 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                 $COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 $COLUMN_USERNAME TEXT UNIQUE NOT NULL,
                 $COLUMN_PASSWORD_HASH TEXT NOT NULL,
-                $COLUMN_BIO TEXT DEFAULT ''
+                $COLUMN_BIO TEXT DEFAULT '',
+                $COLUMN_PROFILE_IMAGE_URI TEXT
             )
         """.trimIndent()
 
@@ -91,12 +93,10 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
             )
         """.trimIndent()
 
-        db.execSQL(createFriendsTable)
-
-
         db.execSQL(createUsersTable)
         db.execSQL(createPostsTable)
         db.execSQL(createLikesTable)
+        db.execSQL(createFriendsTable)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -522,7 +522,7 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
             arrayOf(userId.toString()), null, null, null)
 
         return cursor.use {
-            if (it.moveToFirst()) it.getString(0) else ""
+            if (it.moveToFirst()) it.getString(0) else "No bio yet!"
         }
     }
 
@@ -532,5 +532,38 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
             put("bio", newBio)
         }
         db.update("users", values, "id = ?", arrayOf(userId.toString()))
+    }
+
+    // Profile picture-related methods
+    fun updateUserProfileImage(userId: Int, imageUri: String) {
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put(COLUMN_PROFILE_IMAGE_URI, imageUri)
+        }
+
+        db.update(TABLE_USERS, values, "$COLUMN_ID = ?", arrayOf(userId.toString()))
+        db.close()
+    }
+
+    fun getUserProfileImageUri(userId: Int): String? {
+        val db = this.readableDatabase
+        var imageUri: String? = null
+
+        val cursor = db.query(
+            TABLE_USERS,
+            arrayOf(COLUMN_PROFILE_IMAGE_URI),
+            "$COLUMN_ID = ?",
+            arrayOf(userId.toString()),
+            null,
+            null,
+            null
+        )
+
+        if (cursor.moveToFirst()) {
+            imageUri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PROFILE_IMAGE_URI))
+        }
+        cursor.close()
+        db.close()
+        return imageUri
     }
 }
