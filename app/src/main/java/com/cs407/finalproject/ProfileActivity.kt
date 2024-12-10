@@ -206,11 +206,11 @@ class ProfileActivity : AppCompatActivity() {
                 val uriNew = Uri.parse(uri)
                 profileImage.setImageURI(uriNew)
             } catch (e: Exception) {
-                profileImage.setImageResource(R.drawable.expost1)
+                profileImage.setImageResource(R.drawable.logo)
             }
         } else {
             //set it back to normal
-            profileImage.setImageResource(R.drawable.expost1)
+            profileImage.setImageResource(R.drawable.logo)
         }
     }
     override fun onResume() {
