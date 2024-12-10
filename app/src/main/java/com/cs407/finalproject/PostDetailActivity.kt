@@ -2,8 +2,10 @@ package com.cs407.finalproject
 
 import android.content.Context
 import android.content.Intent
+import android.location.Geocoder
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
@@ -12,6 +14,7 @@ import android.widget.ToggleButton
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
+import java.util.Locale
 
 class PostDetailActivity : AppCompatActivity() {
 
@@ -90,8 +93,13 @@ class PostDetailActivity : AppCompatActivity() {
             }
 
             caption.text = currentPost.caption
-            geotag.text = if (currentPost.latitude != null && currentPost.longitude != null)
-                "📍 ${currentPost.latitude}, ${currentPost.longitude}" else "📍"
+            if (currentPost.latitude != null && currentPost.longitude != null) {
+                getAddressFromLocation(currentPost.latitude, currentPost.longitude) { address ->
+                    geotag.text = "📍 $address"
+                }
+            } else {
+                geotag.text = ""
+            }
 
             updateLikeUI()
             findViewById<Button>(R.id.deleteButton).visibility =
@@ -107,5 +115,28 @@ class PostDetailActivity : AppCompatActivity() {
     private fun getCurrentUserId(): Int? {
         val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
         return sharedPref.getInt("LOGGED_IN_USER_ID", -1).takeIf { it != -1 }
+    }
+
+    private fun getAddressFromLocation(latitude: Double, longitude: Double, callback: (String) -> Unit) {
+        try {
+            val geocoder = Geocoder(this, Locale.getDefault())
+            geocoder.getFromLocation(latitude, longitude, 1) { addresses ->
+                if (addresses.isNotEmpty()) {
+                    val address = addresses[0]
+                    val locality = address.locality ?: ""
+                    val adminArea = address.adminArea ?: ""
+                    runOnUiThread {
+                        callback("$locality, $adminArea")
+                    }
+                } else {
+                    runOnUiThread {
+                        callback("$latitude, $longitude")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("FeedActivity", "Error getting address", e)
+            callback("$latitude, $longitude")
+        }
     }
 }

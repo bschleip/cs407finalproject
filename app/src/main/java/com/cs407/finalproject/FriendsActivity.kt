@@ -19,7 +19,6 @@ class FriendsActivity : AppCompatActivity() {
 
     private lateinit var friendsRecyclerView: RecyclerView
     private lateinit var databaseHelper: UserDatabaseHelper
-    private lateinit var currentUser: UserState // Assuming `UserState` holds the logged-in user's info
 
     private var emptyStringList = listOf<String>()
 
@@ -28,7 +27,6 @@ class FriendsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_friends)
 
-        // Initialize the database helper
         databaseHelper = UserDatabaseHelper(this)
 
         friendsBackButton = findViewById(R.id.friends_back_button)
@@ -46,9 +44,7 @@ class FriendsActivity : AppCompatActivity() {
 
         friendsRecyclerView.adapter = FriendsAdapter(friendsList.toMutableList())
 
-        friendsBackButton.setOnClickListener {
-            finish() // Go back to the previous screen
-        }
+        friendsBackButton.setOnClickListener { finish() }
     }
 
 
@@ -110,8 +106,8 @@ class FriendsActivity : AppCompatActivity() {
             val userId = getCurrentUserId()
             if (userId != null) {
                 databaseHelper.removeFriend(userId, friendName)
-                friends.remove(friendName) // Update list
-                notifyDataSetChanged() // Refresh RecyclerView
+                friends.remove(friendName)
+                notifyDataSetChanged()
                 Toast.makeText(this@FriendsActivity, "$friendName removed from friends list.", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(this@FriendsActivity, "Failed to remove $friendName.", Toast.LENGTH_SHORT).show()

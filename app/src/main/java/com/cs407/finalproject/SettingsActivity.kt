@@ -65,7 +65,7 @@ class SettingsActivity : AppCompatActivity() {
         holder.itemView.setOnClickListener {
             when (setting) {
                 "Terms and Conditions" -> navigateToTerms()
-                "View Friends" -> navigateToFriends() // New case for "View Friends"
+                "View Friends" -> navigateToFriends()
                 "Logout" -> logout()
             }
         }
@@ -80,7 +80,6 @@ class SettingsActivity : AppCompatActivity() {
         val intent = Intent(this, FriendsActivity::class.java)
         startActivity(intent)
     }
-
 
     private fun logout() {
         val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)

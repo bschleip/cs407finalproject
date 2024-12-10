@@ -19,12 +19,9 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import android.Manifest
-import android.location.LocationManager
 import android.view.View
 import android.widget.ProgressBar
 import androidx.activity.OnBackPressedCallback
-import androidx.lifecycle.findViewTreeViewModelStoreOwner
-import com.google.android.gms.location.Priority
 
 
 class  ConfirmationActivity : AppCompatActivity() {

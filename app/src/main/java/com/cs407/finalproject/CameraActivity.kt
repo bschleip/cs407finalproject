@@ -69,7 +69,6 @@ class CameraActivity : AppCompatActivity() {
             requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
 
-        // Set up button listeners
         captureButton.setOnClickListener { takePhoto() }
         feedButton.setOnClickListener {
             startActivity(Intent(this, FeedActivity::class.java))

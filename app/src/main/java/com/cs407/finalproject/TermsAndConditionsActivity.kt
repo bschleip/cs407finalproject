@@ -14,11 +14,9 @@ class TermsAndConditionsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_terms_and_conditions)
 
-        // Initialize views
         termsTextView = findViewById(R.id.termsTextView)
         backButton = findViewById(R.id.backButton)
 
-        // Set terms and conditions text
         termsTextView.text = """
             Welcome to our application! 
             
@@ -31,9 +29,8 @@ class TermsAndConditionsActivity : AppCompatActivity() {
             Thank you for using our app!
         """.trimIndent()
 
-        // Handle back button click
         backButton.setOnClickListener {
-            finish() // Close this activity and return to the previous screen
+            finish()
         }
     }
 }

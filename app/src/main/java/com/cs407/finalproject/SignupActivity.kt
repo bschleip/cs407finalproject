@@ -1,10 +1,7 @@
 package com.cs407.finalproject
 
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-import android.database.sqlite.SQLiteDatabase
-import android.database.sqlite.SQLiteOpenHelper
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
@@ -12,7 +9,6 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.Toast
-import java.security.MessageDigest
 
 class SignupActivity : AppCompatActivity() {
     // View bindings
@@ -23,7 +19,7 @@ class SignupActivity : AppCompatActivity() {
     private lateinit var loginButton: Button
     private lateinit var errorMessage: TextView
 
-    private lateinit var dbHelper: UserDatabaseHelper // Database helper instance
+    private lateinit var dbHelper: UserDatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

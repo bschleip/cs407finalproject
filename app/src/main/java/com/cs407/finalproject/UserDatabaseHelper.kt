@@ -358,7 +358,6 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         }
     }
 
-    // TODO: we should probably show the like counting
     fun getLikeCount(postId: Int): Int {
         val db = this.readableDatabase
         return db.query(
@@ -414,27 +413,6 @@ class UserDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         }
     }
 
-    // TODO: this function is unused; we can get rid of it if it's unnecessary
-    fun getFriendList(userId: Int): List<Int> {
-        val friendList = mutableListOf<Int>()
-        val db = readableDatabase
-        val cursor = db.query(
-            "friends",
-            arrayOf("friendId"),
-            "userId=?",
-            arrayOf(userId.toString()),
-            null,
-            null,
-            null
-        )
-        while (cursor.moveToNext()) {
-            friendList.add(cursor.getInt(cursor.getColumnIndexOrThrow("friendId")))
-        }
-        cursor.close()
-        return friendList
-    }
-
-    // TODO: this function is unused; we can get rid of it if it's unnecessary
     fun getPostsByUserIds(userIds: List<Int>): List<Post> {
         if (userIds.isEmpty()) return emptyList()
 

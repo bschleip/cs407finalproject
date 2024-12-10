@@ -41,7 +41,6 @@ class FeedActivity : AppCompatActivity() {
 
         postDatabaseHelper = UserDatabaseHelper(this)
 
-        // Bind UI components
         cameraBtn = findViewById(R.id.nav_cam)
         profileBtn = findViewById(R.id.nav_profile)
         recyclerView = findViewById(R.id.recyclerView)
@@ -51,7 +50,6 @@ class FeedActivity : AppCompatActivity() {
 
         loadPosts()
 
-        // Set navigation button listeners
         cameraBtn.setOnClickListener {
             val intent = Intent(this, CameraActivity::class.java)
             startActivity(intent)
@@ -142,14 +140,12 @@ class FeedActivity : AppCompatActivity() {
             override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
                 val post = posts[position]
 
-                // Set username
                 val username = postDatabaseHelper.getUsernameById(post.userId)
                 holder.usernameButton.text = username
 
                 holder.usernameButton.setOnClickListener {
                     val intent = Intent(this@FeedActivity, ProfileActivity::class.java).apply {
-                        putExtra("USER_ID", post.userId) // TODO: make the ProfileActivity receive this information
-                                                                // This sends the userId so ProfileActivity can pull up the right profile.
+                        putExtra("USER_ID", post.userId)
                     }
                     startActivity(intent)
                 }
@@ -181,14 +177,12 @@ class FeedActivity : AppCompatActivity() {
                 // Post liking logic
                 val currentUserId = getCurrentUserId()
                 if (currentUserId != null) {
-                    // Initialize like button state based on database
                     val isLiked = postDatabaseHelper.hasUserLikedPost(post.id, currentUserId)
                     holder.likeButton.isChecked = isLiked
 
-                    // Handle like button toggle
                     holder.likeButton.setOnClickListener {
                         postDatabaseHelper.toggleLike(post.id, currentUserId)
-                        // Update likes count in UI
+
                         post.likes = if (holder.likeButton.isChecked) post.likes + 1 else post.likes - 1
                         holder.likesCountText.text = post.likes.toString()
 
