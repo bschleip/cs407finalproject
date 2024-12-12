@@ -16,12 +16,10 @@ import androidx.recyclerview.widget.RecyclerView
 class FriendsActivity : AppCompatActivity() {
 
     private lateinit var friendsBackButton: View
-
     private lateinit var friendsRecyclerView: RecyclerView
     private lateinit var databaseHelper: UserDatabaseHelper
 
     private var emptyStringList = listOf<String>()
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,21 +30,22 @@ class FriendsActivity : AppCompatActivity() {
         friendsBackButton = findViewById(R.id.friends_back_button)
         friendsRecyclerView = findViewById(R.id.friends_recycler_view)
 
-        // Set up RecyclerView
-        friendsRecyclerView.layoutManager = LinearLayoutManager(this)
-        friendsRecyclerView.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
 
-        // Fetch friends for the current user
+        friendsRecyclerView.layoutManager = LinearLayoutManager(this)
+        friendsRecyclerView.addItemDecoration(
+            DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
+        )
+
         val friendsList = fetchFriends()
         if (friendsList.isEmpty()) {
             Toast.makeText(this, "No friends found!", Toast.LENGTH_SHORT).show()
         }
 
-        friendsRecyclerView.adapter = FriendsAdapter(friendsList.toMutableList())
+        val adapter = createFriendsAdapter(friendsList.toMutableList())
+        friendsRecyclerView.adapter = adapter
 
         friendsBackButton.setOnClickListener { finish() }
     }
-
 
     private fun getCurrentUserId(): Int? {
         val sharedPref = getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
@@ -56,63 +55,69 @@ class FriendsActivity : AppCompatActivity() {
     private fun fetchFriends(): List<String> {
         val currentUserId = getCurrentUserId()
         val friendIds = currentUserId?.let { databaseHelper.getFriends(it) }
-        if (friendIds != null) {
-            return friendIds.map { friendId -> databaseHelper.getUsernameById(friendId) }
-        }
-        return emptyStringList
+        return friendIds?.map { friendId ->
+            databaseHelper.getUsernameById(friendId)
+        } ?: emptyStringList
     }
 
-    private inner class FriendsAdapter(private var friends: MutableList<String>) :
-        RecyclerView.Adapter<FriendsAdapter.FriendsViewHolder>() {
+    private fun createFriendsAdapter(friends: MutableList<String>): RecyclerView.Adapter<FriendsViewHolder> {
+        return object : RecyclerView.Adapter<FriendsViewHolder>() {
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FriendsViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_friends, parent, false)
-            return FriendsViewHolder(view)
-        }
+            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FriendsViewHolder {
+                val view = LayoutInflater.from(parent.context).inflate(R.layout.item_friends, parent, false)
+                return FriendsViewHolder(view)
+            }
 
-        override fun onBindViewHolder(holder: FriendsViewHolder, position: Int) {
-            holder.bind(friends[position])
-        }
+            override fun onBindViewHolder(holder: FriendsViewHolder, position: Int) {
+                val friendName = friends[position]
+                holder.friendNameTextView.text = friendName
 
-        override fun getItemCount(): Int = friends.size
+                holder.removeFriendButton.setOnClickListener {
+                    showRemoveFriendDialog(friendName) {
+                        removeFriend(friendName)
+                    }
+                }
+            }
 
-        inner class FriendsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            private val friendNameTextView: TextView = itemView.findViewById(R.id.friend_name)
-            private val removeFriendButton: Button = itemView.findViewById(R.id.remove_friend_button)
+            override fun getItemCount(): Int = friends.size
 
-            fun bind(friendName: String) {
-                friendNameTextView.text = friendName
+            private fun showRemoveFriendDialog(friendName: String, onConfirm: () -> Unit) {
+                val dialog = android.app.AlertDialog.Builder(this@FriendsActivity)
+                    .setTitle("Remove Friend")
+                    .setMessage("Are you sure you want to remove $friendName from your friends list?")
+                    .setPositiveButton("Yes") { _, _ ->
+                        onConfirm()
+                    }
+                    .setNegativeButton("No", null)
+                    .create()
 
-                removeFriendButton.setOnClickListener {
-                    showRemoveFriendDialog(friendName)
+                dialog.show()
+            }
+
+            private fun removeFriend(friendName: String) {
+                val userId = getCurrentUserId()
+                if (userId != null) {
+                    databaseHelper.removeFriend(userId, friendName)
+                    friends.remove(friendName)
+                    notifyDataSetChanged()
+                    Toast.makeText(
+                        this@FriendsActivity,
+                        "$friendName removed from friends list.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        this@FriendsActivity,
+                        "Failed to remove $friendName.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
-
-        private fun showRemoveFriendDialog(friendName: String) {
-            val dialog = android.app.AlertDialog.Builder(this@FriendsActivity)
-                .setTitle("Remove Friend")
-                .setMessage("Are you sure you want to remove $friendName from your friends list?")
-                .setPositiveButton("Yes") { _, _ ->
-                    removeFriend(friendName)
-                }
-                .setNegativeButton("No", null)
-                .create()
-
-            dialog.show()
-        }
-
-        private fun removeFriend(friendName: String) {
-            val userId = getCurrentUserId()
-            if (userId != null) {
-                databaseHelper.removeFriend(userId, friendName)
-                friends.remove(friendName)
-                notifyDataSetChanged()
-                Toast.makeText(this@FriendsActivity, "$friendName removed from friends list.", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this@FriendsActivity, "Failed to remove $friendName.", Toast.LENGTH_SHORT).show()
-            }
-        }
     }
+}
 
+class FriendsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    val friendNameTextView: TextView = itemView.findViewById(R.id.friend_name)
+    val removeFriendButton: Button = itemView.findViewById(R.id.remove_friend_button)
 }
